@@ -1,22 +1,31 @@
-"""
-This module takes care of starting the API Server, Loading the DB and Adding the endpoints
-"""
-from flask import Flask, request, jsonify, url_for, Blueprint
-from api.models import db, User
-from api.utils import generate_sitemap, APIException
-from flask_cors import CORS
+from flask import Blueprint, request, jsonify
+from api.models import db, Empresa 
+from flask_bcrypt import Bcrypt 
 
 api = Blueprint('api', __name__)
+bcrypt = Bcrypt() 
 
-# Allow CORS requests to this API
-CORS(api)
+@api.route('/registro-empresa', methods=['POST'])
+def registrar_empresa():
+    body = request.get_json()
 
+    if not body:
+        return jsonify({"msg": "Falta el cuerpo de la solicitud"}), 400
+    
+    password_hash = bcrypt.generate_password_hash(body['password']).decode('utf-8')
+    
+    nueva_empresa = Empresa(
+        nombre_legal=body['nombre_legal'],
+        cif_nif=body['cif_nif'],
+        email=body['email'],
+        password=password_hash,
+        is_active=True 
+    )
 
-@api.route('/hello', methods=['POST', 'GET'])
-def handle_hello():
-
-    response_body = {
-        "message": "Hello! I'm a message that came from the backend, check the network tab on the google inspector and you will see the GET request"
-    }
-
-    return jsonify(response_body), 200
+    try:
+        db.session.add(nueva_empresa)
+        db.session.commit()
+        return jsonify({"msg": "Empresa registrada correctamente"}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"msg": f"Error al registrar: {str(e)}"}), 500
