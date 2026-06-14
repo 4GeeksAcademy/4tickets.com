@@ -1,15 +1,13 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import String, Boolean, Float, Integer, DateTime, Text, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime
 
 db = SQLAlchemy()
 
-
 class User(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
-    email: Mapped[str] = mapped_column(
-        String(120), unique=True, nullable=False)
+    email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
     password: Mapped[str] = mapped_column(nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean(), nullable=False)
 
@@ -17,24 +15,28 @@ class User(db.Model):
         return {
             "id": self.id,
             "email": self.email,
-
         }
 
-
 class Company(db.Model):
+    __tablename__ = 'company'
     id: Mapped[int] = mapped_column(primary_key=True)
-    email: Mapped[str] = mapped_column(
-        String(120), unique=True, nullable=False)
+    nombre_legal: Mapped[str] = mapped_column(String(150), nullable=False)
+    cif_nif: Mapped[str] = mapped_column(String(20), unique=True, nullable=False)
+    email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
     password: Mapped[str] = mapped_column(nullable=False)
+    
+    events = relationship('Event', backref='company', lazy=True)
 
     def serialize(self):
         return {
             "id": self.id,
+            "nombre_legal": self.nombre_legal,
+            "cif_nif": self.cif_nif,
             "email": self.email,
         }
 
-
 class Event(db.Model):
+    __tablename__ = 'event'
     id: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str] = mapped_column(String(120), nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=False)
@@ -46,7 +48,7 @@ class Event(db.Model):
     image_url: Mapped[str] = mapped_column(String(500), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean(), default=True)
 
-    company_id: Mapped[int] = mapped_column(ForeignKey('company.id'))
+    company_id: Mapped[int] = mapped_column(ForeignKey('company.id'), nullable=False)
 
     def serialize(self):
         return {
