@@ -6,6 +6,19 @@ from flask_bcrypt import Bcrypt
 db = SQLAlchemy()
 bcrypt = Bcrypt()
 
+class User(db.Model):
+    __tablename__ = 'user'
+    id: Mapped[int] = mapped_column(primary_key=True)
+    email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
+    password: Mapped[str] = mapped_column(String(255), nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean(), default=True)
+
+    def __repr__(self):
+        return f'<User {self.email}>'
+
+    def serialize(self):
+        return {"id": self.id, "email": self.email}
+
 class Empresa(db.Model):
     __tablename__ = 'empresa'
     
@@ -17,7 +30,7 @@ class Empresa(db.Model):
     is_active: Mapped[bool] = mapped_column(Boolean(), default=False)
 
     def __repr__(self):
-        return f'<Empresa {self.email or "Sin correo"}>'
+        return f'<Empresa {self.email}>'
 
     def serialize(self):
         return {
