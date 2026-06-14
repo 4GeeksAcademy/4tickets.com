@@ -10,9 +10,9 @@ CORS(api)
 @api.route('/registro-empresa', methods=['POST'])
 def registrar_empresa():
     data = request.get_json()
-    
+
     if not data or 'email' not in data or 'password' not in data:
-        return jsonify({"msg": "Faltan datos requeridos"}), 400
+        return jsonify({"msg": "Faltan datos requeridos (email y password)"}), 400
 
     if Empresa.query.filter_by(email=data['email']).first():
         return jsonify({"msg": "El email ya está registrado"}), 400
@@ -34,3 +34,9 @@ def registrar_empresa():
     except Exception as e:
         db.session.rollback()
         return jsonify({"msg": "Error en servidor", "error": str(e)}), 500
+
+@api.route('/empresas', methods=['POST'])
+def obtener_empresas():
+    empresas = Empresa.query.all()
+    lista_empresas = [e.serialize() for e in empresas]
+    return jsonify(lista_empresas), 200
