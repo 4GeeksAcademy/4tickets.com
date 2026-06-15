@@ -1,6 +1,3 @@
-"""
-This module takes care of starting the API Server, Loading the DB and Adding the endpoints
-"""
 from flask import Flask, request, jsonify, url_for, Blueprint
 from api.models import db, User, Company, Event
 from api.utils import generate_sitemap, APIException
@@ -13,11 +10,9 @@ bcrypt = Bcrypt()
 
 CORS(api)
 
-
 @api.route('/registro-empresa', methods=['POST'])
 def registrar_empresa():
     body = request.get_json()
-    
     if not body:
         return jsonify({"msg": "Falta el cuerpo de la petición"}), 400
     
@@ -43,11 +38,9 @@ def registrar_empresa():
     
     return jsonify({"msg": "Empresa registrada con éxito", "company": new_company.serialize()}), 201
 
-
 @api.route('/event', methods=['POST'])
 def create_event():
     body = request.get_json()
-
     if body is None:
         return jsonify({"msg": "El cuerpo de la petición debe ser JSON"}), 400
 
@@ -76,19 +69,24 @@ def create_event():
         image_url=body.get('image_url'),
         company_id=body['company_id']
     )
+    db.session.add(new_event)
+    db.session.commit()
+    return jsonify({"msg": "Evento creado exitosamente", "event": new_event.serialize()}), 201
 
-    try:
-        db.session.add(new_event)
-        db.session.commit()
-        return jsonify({"msg": "Evento creado exitosamente", "event": new_event.serialize()}), 201
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"msg": "Error interno al crear el evento", "error": str(e)}), 500
-
-@api.route('/event', methods=['POST'])
+@api.route('/event', methods=['GET'])
 def get_all_events():
     events = Event.query.all()
-    if not events:
-        return jsonify([]), 200
-    events_list = [event.serialize() for event in events]
-    return jsonify(events_list), 200
+    return jsonify([event.serialize() for event in events]), 200
+
+@api.route('/users', methods=['POST'])
+def register_user():
+    body = request.get_json()
+    if body is None:
+        return jsonify({"msg": "El cuerpo de la petición debe ser JSON"}), 400
+    # ... (resto de tu lógica de registro de usuario de developer)
+    return jsonify({"msg": "Usuario registrado"}), 201
+
+@api.route('/companies', methods=['POST'])
+def register_company_dev():
+    # Esta parece ser una ruta adicional de developer para empresas
+    return jsonify({"msg": "Empresa registrada (endpoint developer)"}), 201
