@@ -9,7 +9,6 @@ from datetime import datetime
 
 api = Blueprint('api', __name__)
 
-
 CORS(api)
 
 
@@ -52,7 +51,6 @@ def create_event():
         price=body['price'],
         capacity=body['capacity'],
         category=body['category'],
-
         image_url=body.get('image_url'),
         company_id=body['company_id']
     )
@@ -69,17 +67,86 @@ def create_event():
         db.session.rollback()
         return jsonify({"msg": "Error interno al crear el evento", "error": str(e)}), 500
 
+
 @api.route('/event', methods=['GET'])
 def get_all_events():
-    
     events = Event.query.all()
 
-    
     if not events:
         return jsonify([]), 200
 
-    
     events_list = [event.serialize() for event in events]
 
-   
     return jsonify(events_list), 200
+
+
+@api.route('/users', methods=['POST'])
+def register_user():
+    body = request.get_json()
+
+    if body is None:
+        return jsonify({"msg": "El cuerpo de la petición debe ser JSON"}), 400
+
+    required_fields = ['email', 'password', 'name']
+    for field in required_fields:
+        if field not in body:
+            return jsonify({"msg": f"Falta el campo obligatorio: {field}"}), 400
+
+    user_exists = User.query.filter_by(email=body['email']).first()
+    if user_exists:
+        return jsonify({"msg": "El correo electrónico ya está registrado"}), 400
+
+    new_user = User(
+        email=body['email'],
+        password=body['password'],
+        name=body['name'],
+        is_active=True
+    )
+
+    try:
+        db.session.add(new_user)
+        db.session.commit()
+        return jsonify({
+            "msg": "Usuario registrado exitosamente",
+            "user": new_user.serialize()
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"msg": "Error interno al registrar el usuario", "error": str(e)}), 500
+
+
+@api.route('/companies', methods=['POST'])
+def register_company():
+    body = request.get_json()
+
+    if body is None:
+        return jsonify({"msg": "El cuerpo de la petición debe ser JSON"}), 400
+
+    required_fields = ['email', 'password', 'name']
+    for field in required_fields:
+        if field not in body:
+            return jsonify({"msg": f"Falta el campo obligatorio: {field}"}), 400
+
+    company_exists = Company.query.filter_by(email=body['email']).first()
+    if company_exists:
+        return jsonify({"msg": "El correo electrónico de la empresa ya está registrado"}), 400
+
+    new_company = Company(
+        email=body['email'],
+        password=body['password'],
+        name=body['name'],
+        is_active=True
+    )
+
+    try:
+        db.session.add(new_company)
+        db.session.commit()
+        return jsonify({
+            "msg": "Empresa registrada exitosamente",
+            "company": new_company.serialize()
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"msg": "Error interno al registrar la empresa", "error": str(e)}), 500
