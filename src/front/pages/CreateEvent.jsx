@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { BASE_BACK_URL } from "../core/constantsUrl";
 
 export const CreateEvent = () => {
 
@@ -10,13 +11,63 @@ export const CreateEvent = () => {
   const [price, setPrice] = useState("");
   const [tickets, setTickets] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const [category, setCategory] = useState("");
+  
+  //PRUEBA TEST
+  const BASE_TEST_URL = "https://fantastic-space-adventure-x5pv46g76x4xfp6p7-3001.app.github.dev/"
+  //
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const newEvent = {
+      title: eventName,
+      description,
+      date: `${date}T${time}`,
+      location,
+      price: Number(price),
+      capacity: Number(tickets),
+      category,
+      image_url: imageUrl,
+      company_id: 1
+    };
+
+    try {
+
+      console.log(newEvent);
+                                // PRUEBA TEST URL BACK 
+      const response = await fetch(`${BASE_TEST_URL}api/event`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(newEvent)
+      });
+
+      const data = await response.json();
+
+      console.log(data);
+
+      if (response.ok) {
+        alert("Event created successfully");
+      } else {
+        alert("Error creating event");
+      }
+
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  
+
+
 
   return (
     <div className="container my-5">
       <h1>Create Event</h1>
       <p>Fill in the information to publish your event.</p>
 
-      <form>
+      <form onSubmit={handleSubmit}>
 
         <input
           className="form-control mb-3"
@@ -74,9 +125,17 @@ export const CreateEvent = () => {
           placeholder="Event Image URL"
           value={imageUrl}
           onChange={(e) => setImageUrl(e.target.value)}
-/>
+        />
 
-        <button className="btn btn-primary">
+        <input
+          className="form-control mb-3"
+          placeholder="Category"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+        />  
+
+
+        <button  type="submit" className="btn btn-primary">
           Create Event
         </button>
 

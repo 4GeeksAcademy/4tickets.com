@@ -11,7 +11,7 @@ import { Demo } from "./pages/Demo";
 
 // 1. IMPORTA TU NUEVA VISTA AQUÍ
 import { Register } from "./pages/Register";
-import { CompanyDashboard } from "./components/CompanyDashboard";
+import { CompanyDashboard } from "./pages/CompanyDashboard";
 import { CreateEvent } from "./pages/CreateEvent";
 
 export const router = createBrowserRouter(

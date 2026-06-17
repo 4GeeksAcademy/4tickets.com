@@ -1,0 +1,4 @@
+export const BASE_BACK_URL = import.meta.env.VITE_BACKEND_URL
+
+
+
