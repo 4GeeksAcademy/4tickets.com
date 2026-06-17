@@ -14,7 +14,7 @@ export const CreateEvent = () => {
   const [category, setCategory] = useState("");
   
   //PRUEBA TEST
-  const BASE_TEST_URL = "https://fantastic-space-adventure-x5pv46g76x4xfp6p7-3001.app.github.dev/"
+  
   //
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -35,7 +35,7 @@ export const CreateEvent = () => {
 
       console.log(newEvent);
                                 // PRUEBA TEST URL BACK 
-      const response = await fetch(`${BASE_TEST_URL}api/event`, {
+      const response = await fetch(`${BASE_BACK_URL}api/event`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

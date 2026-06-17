@@ -10,8 +10,8 @@ export const Home = () => {
 	return (
 		<>
         <Link to="/create-event" className="btn btn-warning mt-3">
-  Test Create Event
-</Link>
+            Test Create Event
+        </Link>
 		<Section />
 		<div className="container my-5">
                 <div className="row align-items-center">
