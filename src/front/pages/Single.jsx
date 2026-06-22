@@ -9,6 +9,7 @@ export const Single = () => {
     const event = store.events.find((item) => item.id === parseInt(theId));
 
     const handlePayment = async () => {
+        localStorage.setItem("last_event_id", event.id);
         try {
             const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/create-checkout-session`, {
                 method: "POST",

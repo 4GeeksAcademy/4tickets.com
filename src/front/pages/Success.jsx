@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { Link } from 'react-router-dom';
 
 export const Success = () => {
     useEffect(() => {
@@ -14,6 +15,7 @@ export const Success = () => {
                 });
                 if (response.ok) {
                     console.log("¡Compra guardada en la base de datos!");
+                    localStorage.removeItem("last_event_id");
                 }
             } catch (error) {
                 console.error("Error al confirmar:", error);
@@ -27,6 +29,10 @@ export const Success = () => {
         <div className="container mt-5 text-center">
             <h1>¡Pago exitoso!</h1>
             <p>Gracias por tu compra. Tu entrada ya está registrada.</p>
+
+            <Link to="/" className="btn btn-primary mt-3">
+                Volver a la página principal
+            </Link>
         </div>
     );
 };

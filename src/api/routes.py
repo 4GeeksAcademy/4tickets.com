@@ -119,8 +119,8 @@ def create_checkout_session():
                 'quantity': 1,
             }],
             mode='payment',
-            success_url='https://tu-url-de-codespaces-3000.app.github.dev/success',
-            cancel_url='https://tu-url-de-codespaces-3000.app.github.dev/',
+            success_url='https://literate-goldfish-696g459vpr7rcxqj7-3000.app.github.dev/success',
+            cancel_url='https://literate-goldfish-696g459vpr7rcxqj7-3000.app.github.dev/single/1',
         )
         return jsonify({'url': checkout_session.url}), 200
     except Exception as e:
@@ -129,19 +129,27 @@ def create_checkout_session():
 @api.route('/confirm-purchase', methods=['POST'])
 def confirm_purchase():
     data = request.get_json()
-    
     user_id = data.get('user_id')
     event_id = data.get('event_id')
-    
+
     if not user_id or not event_id:
         return jsonify({"msg": "Datos incompletos"}), 400
 
-    new_buy = Buy(user_id=user_id, event_id=event_id)
-    
+    event = Event.query.get(event_id)
+    if not event:
+        return jsonify({"msg": "Evento no encontrado"}), 404
+
+    if event.capacity <= 0:
+        return jsonify({"msg": "No quedan entradas"}), 400
+
     try:
+        event.capacity -= 1
+        
+        new_buy = Buy(user_id=user_id, event_id=event_id)
         db.session.add(new_buy)
+        
         db.session.commit()
-        return jsonify({"msg": "Compra registrada con éxito"}), 201
+        return jsonify({"msg": "Compra registrada con éxito y stock actualizado"}), 201
     except Exception as e:
         db.session.rollback()
         return jsonify({"msg": f"Error al guardar: {str(e)}"}), 500
