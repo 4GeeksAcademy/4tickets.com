@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify, url_for, Blueprint
-from api.models import db, User, Company, Event
+from api.models import db, User, Company, Event, UserEventFollow
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 from datetime import datetime
@@ -9,6 +9,7 @@ api = Blueprint('api', __name__)
 bcrypt = Bcrypt() 
 
 CORS(api)
+
 
 @api.route('/registro-empresa', methods=['POST'])
 def registrar_empresa():
@@ -90,3 +91,64 @@ def register_user():
 def register_company_dev():
     # Esta parece ser una ruta adicional de developer para empresas
     return jsonify({"msg": "Empresa registrada (endpoint developer)"}), 201
+
+
+@api.route("/follow/event/<int:event_id>", methods=["POST"])
+def follow_event(event_id):
+
+    user_id = 1
+
+    event = Event.query.get(event_id)
+
+    if event is None:
+        return jsonify({"msg": "Event not found"}), 404
+
+    already_follow = UserEventFollow.query.filter_by(
+        user_id=user_id,
+        event_id=event_id
+    ).first()
+
+    if already_follow:
+        return jsonify({"msg": "You already follow this event"}), 400
+
+    new_follow = UserEventFollow(
+        user_id=user_id,
+        event_id=event_id
+    )
+
+    db.session.add(new_follow)
+    db.session.commit()
+
+    return jsonify({"msg": "Event followed successfully"}), 201
+
+@api.route("/follow/event/<int:event_id>", methods=["DELETE"])
+def unfollow_event(event_id):
+
+    user_id = 1
+
+    follow = UserEventFollow.query.filter_by(
+        user_id=user_id,
+        event_id=event_id
+    ).first()
+
+    if follow is None:
+        return jsonify({"msg": "You are not following this event"}), 404
+
+    db.session.delete(follow)
+    db.session.commit()
+
+    return jsonify({"msg": "Event unfollowed successfully"}), 200
+
+@api.route("/users/followed-events", methods=["GET"])
+def get_followed_events():
+
+    user_id = 1
+
+    follows = UserEventFollow.query.filter_by(user_id=user_id).all()
+
+    results = []
+
+    for follow in follows:
+        results.append(follow.event.serialize())
+
+    return jsonify(results), 200
