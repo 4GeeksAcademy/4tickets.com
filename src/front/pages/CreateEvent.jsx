@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { BASE_BACK_URL } from "../core/constantsUrl";
 
+
 export const CreateEvent = () => {
 
   const [eventName, setEventName] = useState("");
@@ -13,9 +14,9 @@ export const CreateEvent = () => {
   const [imageUrl, setImageUrl] = useState("");
   const [category, setCategory] = useState("");
   
-  //PRUEBA TEST
   
-  //
+  
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -34,7 +35,7 @@ export const CreateEvent = () => {
     try {
 
       console.log(newEvent);
-                                // PRUEBA TEST URL BACK 
+                                
       const response = await fetch(`${BASE_BACK_URL}api/event`, {
         method: "POST",
         headers: {
@@ -63,84 +64,154 @@ export const CreateEvent = () => {
 
 
   return (
-    <div className="container my-5">
-      <h1>Create Event</h1>
-      <p>Fill in the information to publish your event.</p>
+    <div className="create-event-page">
+      <div className="container">
+        <div className="create-event-header">
+          <h1>Create Event</h1>
+          <p>Fill in the information to publish your event.</p>
+        </div>
 
-      <form onSubmit={handleSubmit}>
+        <div className="create-event-box">
+          <div className="row g-4">
+            <div className="col-lg-7">
+              <form onSubmit={handleSubmit}>
+                <label className="event-label">Event name</label>
+                <input
+                  className="form-control event-input"
+                  placeholder="Summer Festival"
+                  value={eventName}
+                  onChange={(e) => setEventName(e.target.value)}
+                />
 
-        <input
-          className="form-control mb-3"
-          placeholder="Event Name"
-          value={eventName}
-          onChange={(e) => setEventName(e.target.value)}
-        />
+                <label className="event-label">Description</label>
+                <textarea
+                  className="form-control event-input event-textarea"
+                  placeholder="Write a short description..."
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                ></textarea>
 
-        <textarea
-          className="form-control mb-3"
-          placeholder="Description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        ></textarea>
+                <div className="row">
+                  <div className="col-md-6">
+                    <label className="event-label">Date</label>
+                    <input
+                      className="form-control event-input"
+                      type="date"
+                      value={date}
+                      onChange={(e) => setDate(e.target.value)}
+                    />
+                  </div>
 
-        <input
-          className="form-control mb-3"
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-        />
+                  <div className="col-md-6">
+                    <label className="event-label">Time</label>
+                    <input
+                      className="form-control event-input"
+                      type="time"
+                      value={time}
+                      onChange={(e) => setTime(e.target.value)}
+                    />
+                  </div>
+                </div>
 
-        <input
-          className="form-control mb-3"
-          type="time"
-          value={time}
-          onChange={(e) => setTime(e.target.value)}
-        />
+                <label className="event-label">Location</label>
+                <input
+                  className="form-control event-input"
+                  placeholder="Córdoba, Spain"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                />
 
-        <input
-          className="form-control mb-3"
-          placeholder="Location"
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
-        />
+                <div className="row">
+                  <div className="col-md-6">
+                    <label className="event-label">Price</label>
+                    <input
+                      className="form-control event-input"
+                      type="number"
+                      placeholder="25"
+                      value={price}
+                      onChange={(e) => setPrice(e.target.value)}
+                    />
+                  </div>
 
-        <input
-          className="form-control mb-3"
-          type="number"
-          placeholder="Price"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-        />
+                  <div className="col-md-6">
+                    <label className="event-label">Available tickets</label>
+                    <input
+                      className="form-control event-input"
+                      type="number"
+                      placeholder="300"
+                      value={tickets}
+                      onChange={(e) => setTickets(e.target.value)}
+                    />
+                  </div>
+                </div>
 
-        <input
-          className="form-control mb-3"
-          type="number"
-          placeholder="Available Tickets"
-          value={tickets}
-          onChange={(e) => setTickets(e.target.value)}
-        />
+                <label className="event-label">Event image URL</label>
+                <input
+                  className="form-control event-input"
+                  placeholder="https://..."
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                />
 
-        <input
-          className="form-control mb-3"
-          placeholder="Event Image URL"
-          value={imageUrl}
-          onChange={(e) => setImageUrl(e.target.value)}
-        />
+                <label className="event-label">Category</label>
+                <select
+                  className="form-select event-input"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                >
+                  <option value="">Select category</option>
+                  <option value="Concert">Concert</option>
+                  <option value="Festival">Festival</option>
+                  <option value="Sports">Sports</option>
+                  <option value="Theater">Theater</option>
+                  <option value="Other">Other</option>
+                </select>
 
-        <input
-          className="form-control mb-3"
-          placeholder="Category"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-        />  
+                <button type="submit" className="create-event-btn">
+                  Create Event
+                </button>
+              </form>
+            </div>
 
+            <div className="col-lg-5">
+              <div className="event-preview">
+                <div className="preview-image-box">
+                  {imageUrl ? (
+                    <img src={imageUrl} alt="Event preview" />
+                  ) : (
+                    <div className="preview-placeholder">
+                      Event image preview
+                    </div>
+                  )}
+                </div>
 
-        <button  type="submit" className="btn btn-primary">
-          Create Event
-        </button>
+                <div className="preview-content">
+                  <span className="preview-category">
+                    {category || "Category"}
+                  </span>
 
-      </form>
+                  <h3>{eventName || "Event name"}</h3>
+
+                  <p className="preview-description">
+                    {description || "Your event description will appear here."}
+                  </p>
+
+                  <div className="preview-info">
+                    <p>📅 {date || "Date"} {time || "Time"}</p>
+                    <p>📍 {location || "Location"}</p>
+                    <p>🎟️ {tickets || "0"} tickets available</p>
+                  </div>
+
+                  <div className="preview-price">
+                    {price ? `${price} €` : "Free / Price"}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
     </div>
-  );
+  )
 };
-
