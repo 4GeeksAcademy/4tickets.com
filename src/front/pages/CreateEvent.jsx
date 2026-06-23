@@ -12,9 +12,9 @@ export const CreateEvent = () => {
   const [tickets, setTickets] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [category, setCategory] = useState("");
-  
+
   //PRUEBA TEST
-  
+
   //
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -34,8 +34,8 @@ export const CreateEvent = () => {
     try {
 
       console.log(newEvent);
-                                // PRUEBA TEST URL BACK 
-      const response = await fetch(`${BASE_BACK_URL}api/event`, {
+      // PRUEBA TEST URL BACK 
+      const response = await fetch(`${BASE_BACK_URL}/api/event`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -58,7 +58,7 @@ export const CreateEvent = () => {
     }
   };
 
-  
+
 
 
 
@@ -132,10 +132,10 @@ export const CreateEvent = () => {
           placeholder="Category"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-        />  
+        />
 
 
-        <button  type="submit" className="btn btn-primary">
+        <button type="submit" className="btn btn-primary">
           Create Event
         </button>
 

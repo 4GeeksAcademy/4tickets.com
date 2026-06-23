@@ -2,17 +2,20 @@ import { Link } from "react-router-dom";
 
 export const Navbar = () => {
     return (
-        <nav className="navbar navbar-expand-lg navbar-light bg-light position: fixed">
+        <nav className="navbar navbar-expand-lg navbar-light bg-light position-fixed w-100">
             <div className="container">
 
-                <a className="navbar-brand" href="#">
+
+                <Link className="navbar-brand" to="/">
                     4Tickets
-                </a>
+                </Link>
 
                 <div className="ms-auto">
-                    <a className="btn btn-outline-primary me-2" href="#">
+
+                    <Link className="btn btn-outline-primary me-2" to="/login">
                         Login
-                    </a>
+                    </Link>
+
 
                     <a className="btn btn-outline-primary" href="#">
                         Contact

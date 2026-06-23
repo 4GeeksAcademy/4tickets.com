@@ -5,13 +5,28 @@ from datetime import datetime
 
 db = SQLAlchemy()
 
+# Tabla auxiliar para la relación Muchos a Muchos (Usuarios siguen Eventos)
+followers_table = db.Table('followers_table',
+                           db.Column('user_id', db.Integer, db.ForeignKey(
+                               'user.id'), primary_key=True),
+                           db.Column('event_id', db.Integer, db.ForeignKey(
+                               'event.id'), primary_key=True)
+                           )
+
+
 class User(db.Model):
     __tablename__ = 'user'
     id: Mapped[int] = mapped_column(primary_key=True)
-    email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
+    email: Mapped[str] = mapped_column(
+        String(120), unique=True, nullable=False)
     name: Mapped[str] = mapped_column(String(120), nullable=True)
     password: Mapped[str] = mapped_column(nullable=False)
-    is_active: Mapped[bool] = mapped_column(Boolean(), nullable=True, default=True)
+    is_active: Mapped[bool] = mapped_column(
+        Boolean(), nullable=True, default=True)
+
+    # Relación con los eventos seguidos
+    followed_events = db.relationship(
+        'Event', secondary=followers_table, backref='followers')
 
     def serialize(self):
         return {
@@ -20,16 +35,20 @@ class User(db.Model):
             "name": self.name,
         }
 
+
 class Company(db.Model):
     __tablename__ = 'company'
     id: Mapped[int] = mapped_column(primary_key=True)
     nombre_legal: Mapped[str] = mapped_column(String(150), nullable=False)
-    cif_nif: Mapped[str] = mapped_column(String(20), unique=True, nullable=False)
-    email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
+    cif_nif: Mapped[str] = mapped_column(
+        String(20), unique=True, nullable=False)
+    email: Mapped[str] = mapped_column(
+        String(120), unique=True, nullable=False)
     name: Mapped[str] = mapped_column(String(120), nullable=True)
     password: Mapped[str] = mapped_column(nullable=False)
-    is_active: Mapped[bool] = mapped_column(Boolean(), nullable=True, default=True)
-    
+    is_active: Mapped[bool] = mapped_column(
+        Boolean(), nullable=True, default=True)
+
     events = relationship('Event', backref='company', lazy=True)
 
     def serialize(self):
@@ -41,6 +60,7 @@ class Company(db.Model):
             "name": self.name,
             "is_active": self.is_active
         }
+
 
 class Event(db.Model):
     __tablename__ = 'event'
@@ -55,7 +75,8 @@ class Event(db.Model):
     image_url: Mapped[str] = mapped_column(String(500), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean(), default=True)
 
-    company_id: Mapped[int] = mapped_column(ForeignKey('company.id'), nullable=False)
+    company_id: Mapped[int] = mapped_column(
+        ForeignKey('company.id'), nullable=False)
 
     def serialize(self):
         return {

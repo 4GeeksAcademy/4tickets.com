@@ -1,4 +1,4 @@
-// Import necessary components and functions from react-router-dom.
+
 import {
   createBrowserRouter,
   createRoutesFromElements,
@@ -9,31 +9,27 @@ import { Home } from "./pages/Home";
 import { Single } from "./pages/Single";
 import { Demo } from "./pages/Demo";
 
-// 1. IMPORTA TU NUEVA VISTA AQUÍ
 import { Register } from "./pages/Register";
 import { CompanyDashboard } from "./pages/CompanyDashboard";
 import { CreateEvent } from "./pages/CreateEvent";
 
+
+import { Login } from "./pages/Login";
+
 export const router = createBrowserRouter(
   createRoutesFromElements(
-    // CreateRoutesFromElements function allows you to build route elements declaratively.
-    // Create your routes here, if you want to keep the Navbar and Footer in all views, add your new routes inside the containing Route.
-    // Root, on the contrary, create a sister Route, if you have doubts, try it!
-    // Note: keep in mind that errorElement will be the default page when you don't get a route, customize that page to make your project more attractive.
-    // Note: The child paths of the Layout element replace the Outlet component with the elements contained in the "element" attribute of these child paths.
-
-    // Root Route: All navigation will start from here.
     <Route path="/" element={<Layout />} errorElement={<h1>Not found!</h1>} >
 
-      {/* Nested Routes: Defines sub-routes within the BaseHome component. */}
       <Route path="/" element={<Home />} />
-      <Route path="/single/:theId" element={<Single />} />  {/* Dynamic route for single items */}
+      <Route path="/single/:theId" element={<Single />} />
       <Route path="/demo" element={<Demo />} />
-
-      {/* 2. AÑADE TU NUEVA RUTA AQUÍ */}
+<Route path="/test" element={<h1>¡Hola, esto es una prueba!</h1>} />
       <Route path="/register" element={<Register />} />
       <Route path="/company-dashboard" element={<CompanyDashboard />} />
       <Route path="/create-event" element={<CreateEvent />} />
+
+
+      <Route path="/login" element={<Login />} />
 
     </Route>
   )
