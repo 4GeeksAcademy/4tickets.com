@@ -2,23 +2,13 @@ import { Link } from "react-router-dom";
 
 export const Navbar = () => {
     return (
-        <nav className="navbar navbar-expand-lg navbar-light bg-light position: fixed">
+        <nav className="navbar navbar-expand-lg navbar-light bg-light">
             <div className="container">
-
-                <a className="navbar-brand" href="#">
-                    4Tickets
-                </a>
-
+                <Link className="navbar-brand" to="/">4Tickets</Link>
                 <div className="ms-auto">
-                    <a className="btn btn-outline-primary me-2" href="#">
-                        Login
-                    </a>
-
-                    <a className="btn btn-outline-primary" href="#">
-                        Contact
-                    </a>
+                    <Link className="btn btn-outline-primary me-2" to="/login">Login</Link>
+                    <Link className="btn btn-outline-primary" to="/contact">Contact</Link>
                 </div>
-
             </div>
         </nav>
     );

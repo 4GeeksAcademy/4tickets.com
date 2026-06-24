@@ -7,41 +7,34 @@ import useGlobalReducer from "../hooks/useGlobalReducer";
 
 export const Layout = () => {
 
-	const { dispatch } = useGlobalReducer();
-	useEffect(() => {
+    const { dispatch } = useGlobalReducer();
 
-		const fetchEvents = async () => {
-			try {
-				const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/event`);
-				if (!response.ok) {
-					const text = await response.text();
-					throw new Error(`HTTP ${response.status}: ${text}`);
-				}
+    useEffect(() => {
+        const fetchEvents = async () => {
+            try {
+                const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/event`);
+                if (!response.ok) {
+                    const text = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${text}`);
+                }
 
-				const data = await response.json();
-				dispatch({ type: "set_events", payload: data });
-			} catch (error) {
-				console.error("Error cargando eventos:", error);
-			}
-		};
+                const data = await response.json();
+                dispatch({ type: "set_events", payload: data });
+            } catch (error) {
+                console.error("Error cargando eventos:", error);
+            }
+        };
         
-		fetchEvents();
-	}, [dispatch]);
-	return (
-		<ScrollToTop>
-			<Navbar />
-			<Outlet />
-			<Footer />
-		</ScrollToTop>
-	);
-};
+        fetchEvents();
+    }, [dispatch]);
+
     return (
         <ScrollToTop>
-        
             <Navbar />
-        <div className = "bg-primary-subtle p-4">
-            <Outlet />
-        </div>   
+            <div className="bg-primary-subtle p-4">
+                <Outlet />
+            </div>
+            <Footer />
         </ScrollToTop>
-    )
-}
+    );
+};
