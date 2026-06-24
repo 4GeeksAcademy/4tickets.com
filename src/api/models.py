@@ -5,7 +5,7 @@ from datetime import datetime
 
 db = SQLAlchemy()
 
-# Tabla auxiliar para la relación Muchos a Muchos (Usuarios siguen Eventos)
+
 followers_table = db.Table('followers_table',
                            db.Column('user_id', db.Integer, db.ForeignKey(
                                'user.id'), primary_key=True),
