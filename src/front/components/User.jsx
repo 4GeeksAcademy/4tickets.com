@@ -1,8 +1,12 @@
 import React from "react"
 import { Link } from "react-router-dom";
 
+import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 
 export const User = () => {
+
+    const { store } = useGlobalReducer();
+
     return (
         <div className="card shadow-sm">
             <div className="card-body">

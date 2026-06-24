@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, useParams } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer";
+import { FollowButton } from "../components/FollowButton.jsx";
 
 export const Single = () => {
     const { store } = useGlobalReducer();
@@ -60,7 +61,7 @@ export const Single = () => {
                     <p><strong>Precio:</strong> {event.price} EUR</p>
                     <p><strong>Plazas disponibles:</strong> {event.capacity}</p>
 
-                    <div className="d-flex gap-2">
+                    <div className="d-flex gap-2 align-items-center">
                         <Link to="/" className="btn btn-secondary">
                             Volver a eventos
                         </Link>
@@ -74,6 +75,9 @@ export const Single = () => {
                                 Agotado
                             </button>
                         )}
+
+                        {/* Aquí entra tu botón de seguir, integrado con los demás */}
+                        <FollowButton eventId={event.id} />
                     </div>
                 </div>
             </div>
