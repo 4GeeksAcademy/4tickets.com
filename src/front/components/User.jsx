@@ -1,4 +1,5 @@
-import React from "react";
+import React from "react"
+import { Link } from "react-router-dom";
 
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 
@@ -7,54 +8,42 @@ export const User = () => {
     const { store } = useGlobalReducer();
 
     return (
-        <div>
+        <div className="card shadow-sm">
+            <div className="card-body">
 
-            <div className="card mb-3 border-danger">
-                <div className="card-header bg-danger text-white">
-                    <h5 className="card-title mb-0">❤️ Mis Favoritos</h5>
-                </div>
-                <div className="card-body">
+                <h4 className="card-title mb-3">
+                    One Platform for Everyone
+                </h4>
 
-                    {store.followedEvents && store.followedEvents.length > 0 ? (
-                        <ul className="list-group list-group-flush">
-                            {store.followedEvents.map((eventId) => (
-                                <li key={eventId} className="list-group-item d-flex justify-content-between align-items-center px-0">
-                                    Evento #{eventId}
-                                    <span className="badge bg-danger rounded-pill">Siguiendo</span>
-                                </li>
-                            ))}
-                        </ul>
-                    ) : (
-                        <p className="card-text text-muted mb-0" style={{ fontSize: "0.9rem" }}>
-                            Aún no sigues ningún evento. ¡Explora el catálogo y añade tus favoritos!
-                        </p>
-                    )}
-                </div>
-            </div>
+                <p className="card-text">
+                    Discover events, buy tickets, and create unforgettable experiences.
+                </p>
 
+                <ul className="list-group list-group-flush mb-4">
+                    <li className="list-group-item">
+                        🎟 Buy tickets in seconds            
+                    </li>
 
-            <div className="card mb-3">
-                <div className="card-body">
-                    <h5 className="card-title">Buy Tickets</h5>
-                    <p className="card-text">
-                        Find events and buy your tickets quickly and safely.
-                    </p>
-                    <button className="btn btn-primary">
-                        Find Events
-                    </button>
-                </div>
-            </div>
+                    <li className="list-group-item">
+                        📅 Discover upcoming events
+                    </li>
 
-            <div className="card">
-                <div className="card-body">
-                    <h5 className="card-title">Register Company</h5>
-                    <p className="card-text">
-                        Create events and sell tickets online with 4Tickets.
-                    </p>
-                    <button className="btn btn-primary">
-                        Start Selling
-                    </button>
-                </div>
+                    <li className="list-group-item">
+                        🏢 Create and manage events
+                    </li>
+
+                    <li className="list-group-item">
+                        🔒 Secure payments
+                    </li>
+                </ul>
+
+                <Link
+                    to="/register"
+                    className="btn btn-primary w-100"
+                >
+                    Create Account
+                </Link>
+
             </div>
         </div>
     );

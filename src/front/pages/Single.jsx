@@ -1,39 +1,86 @@
-
 import React from "react";
 import { Link, useParams } from "react-router-dom";
-import PropTypes from "prop-types";
 import useGlobalReducer from "../hooks/useGlobalReducer";
-
-
 import { FollowButton } from "../components/FollowButton.jsx";
 
-export const Single = props => {
-  const { store } = useGlobalReducer();
-  const { theId } = useParams();
+export const Single = () => {
+    const { store } = useGlobalReducer();
+    const { theId } = useParams();
 
+    const event = store.events.find((item) => item.id === parseInt(theId));
 
-  const singleTodo = store.todos.find(todo => todo.id === parseInt(theId));
+    const handlePayment = async () => {
+        localStorage.setItem("last_event_id", event.id);
+        try {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/create-checkout-session`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    event_id: event.id,
+                    user_id: 1 
+                }),
+            });
 
-  return (
-    <div className="container text-center mt-5">
-      <h1 className="display-4">Evento: {singleTodo?.title}</h1>
+            const data = await response.json();
+            
+            if (response.ok && data.url) {
+                window.location.href = data.url;
+            } else {
+                alert(data.msg || "Error al iniciar el pago");
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            alert("No se pudo conectar con el servidor de pagos");
+        }
+    };
 
+    if (!event) {
+        return (
+            <div className="container text-center mt-5">
+                <p>Evento no encontrado.</p>
+                <Link to="/">
+                    <span className="btn btn-primary">Volver</span>
+                </Link>
+            </div>
+        );
+    }
 
-      <div className="my-4">
-        {singleTodo && <FollowButton eventId={singleTodo.id} />}
-      </div>
+    return (
+        <div className="container my-5">
+            <div className="card">
+                {event.image_url && (
+                    <img src={event.image_url} className="card-img-top" alt={event.title} />
+                )}
+                <div className="card-body">
+                    <h1>{event.title}</h1>
+                    <p>{event.description}</p>
+                    <p><strong>Fecha:</strong> {event.date}</p>
+                    <p><strong>Lugar:</strong> {event.location}</p>
+                    <p><strong>Precio:</strong> {event.price} EUR</p>
+                    <p><strong>Plazas disponibles:</strong> {event.capacity}</p>
 
-      <hr className="my-4" />
+                    <div className="d-flex gap-2 align-items-center">
+                        <Link to="/" className="btn btn-secondary">
+                            Volver a eventos
+                        </Link>
+                        
+                        {event.capacity > 0 ? (
+                            <button onClick={handlePayment} className="btn btn-success">
+                                Comprar entrada
+                            </button>
+                        ) : (
+                            <button className="btn btn-danger" disabled>
+                                Agotado
+                            </button>
+                        )}
 
-      <Link to="/">
-        <span className="btn btn-primary btn-lg" role="button">
-          Volver a la Home
-        </span>
-      </Link>
-    </div>
-  );
-};
-
-Single.propTypes = {
-  match: PropTypes.object
+                        {/* Aquí entra tu botón de seguir, integrado con los demás */}
+                        <FollowButton eventId={event.id} />
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
 };

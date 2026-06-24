@@ -1,14 +1,19 @@
 from flask import Flask, request, jsonify, url_for, Blueprint
-from api.models import db, User, Company, Event
+from api.models import db, User, Company, Event, Buy, UserEventFollow
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 from datetime import datetime
 from flask_bcrypt import Bcrypt
+import stripe
+import os
+from .models import db, Buy
 
 api = Blueprint('api', __name__)
 bcrypt = Bcrypt() 
 
 CORS(api)
+
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
 @api.route('/registro-empresa', methods=['POST'])
 def registrar_empresa():
@@ -83,10 +88,131 @@ def register_user():
     body = request.get_json()
     if body is None:
         return jsonify({"msg": "El cuerpo de la petición debe ser JSON"}), 400
-    # ... (resto de tu lógica de registro de usuario de developer)
     return jsonify({"msg": "Usuario registrado"}), 201
 
 @api.route('/companies', methods=['POST'])
 def register_company_dev():
-    # Esta parece ser una ruta adicional de developer para empresas
     return jsonify({"msg": "Empresa registrada (endpoint developer)"}), 201
+
+@api.route('/create-checkout-session', methods=['POST'])
+def create_checkout_session():
+    data = request.get_json()
+    event_id = data.get('event_id')
+
+    event = Event.query.get(event_id)
+    if not event:
+        return jsonify({'error': 'Evento no encontrado'}), 404
+
+    try:
+        unit_amount = int(event.price * 100) 
+
+        checkout_session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=[{
+                'price_data': {
+                    'currency': 'eur',
+                    'unit_amount': unit_amount,
+                    'product_data': {
+                        'name': event.title,
+                    },
+                },
+                'quantity': 1,
+            }],
+            mode='payment',
+            success_url='https://literate-goldfish-696g459vpr7rcxqj7-3000.app.github.dev/success',
+            cancel_url='https://literate-goldfish-696g459vpr7rcxqj7-3000.app.github.dev/single/1',
+        )
+        return jsonify({'url': checkout_session.url}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+    
+@api.route('/confirm-purchase', methods=['POST'])
+def confirm_purchase():
+    data = request.get_json()
+    user_id = data.get('user_id')
+    event_id = data.get('event_id')
+
+    if not user_id or not event_id:
+        return jsonify({"msg": "Datos incompletos"}), 400
+
+    event = Event.query.get(event_id)
+    if not event:
+        return jsonify({"msg": "Evento no encontrado"}), 404
+
+    if event.capacity <= 0:
+        return jsonify({"msg": "No quedan entradas"}), 400
+
+    try:
+        event.capacity -= 1
+        
+        new_buy = Buy(user_id=user_id, event_id=event_id)
+        db.session.add(new_buy)
+        
+        db.session.commit()
+        return jsonify({"msg": "Compra registrada con éxito y stock actualizado"}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"msg": f"Error al guardar: {str(e)}"}), 500
+      
+    return jsonify({"msg": "Empresa registrada (endpoint developer)"}), 201
+
+
+@api.route("/follow/event/<int:event_id>", methods=["POST"])
+def follow_event(event_id):
+
+    user_id = 1
+
+    event = Event.query.get(event_id)
+
+    if event is None:
+        return jsonify({"msg": "Event not found"}), 404
+
+    already_follow = UserEventFollow.query.filter_by(
+        user_id=user_id,
+        event_id=event_id
+    ).first()
+
+    if already_follow:
+        return jsonify({"msg": "You already follow this event"}), 400
+
+    new_follow = UserEventFollow(
+        user_id=user_id,
+        event_id=event_id
+    )
+
+    db.session.add(new_follow)
+    db.session.commit()
+
+    return jsonify({"msg": "Event followed successfully"}), 201
+
+@api.route("/follow/event/<int:event_id>", methods=["DELETE"])
+def unfollow_event(event_id):
+
+    user_id = 1
+
+    follow = UserEventFollow.query.filter_by(
+        user_id=user_id,
+        event_id=event_id
+    ).first()
+
+    if follow is None:
+        return jsonify({"msg": "You are not following this event"}), 404
+
+    db.session.delete(follow)
+    db.session.commit()
+
+    return jsonify({"msg": "Event unfollowed successfully"}), 200
+
+@api.route("/users/followed-events", methods=["GET"])
+def get_followed_events():
+
+    user_id = 1
+
+    follows = UserEventFollow.query.filter_by(user_id=user_id).all()
+
+    results = []
+
+    for follow in follows:
+        results.append(follow.event.serialize())
+
+    return jsonify(results), 200
