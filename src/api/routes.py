@@ -1,218 +1,127 @@
-from flask import Flask, request, jsonify, url_for, Blueprint
+from flask import request, jsonify, Blueprint
 from api.models import db, User, Company, Event, Buy, UserEventFollow
-from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 from datetime import datetime
 from flask_bcrypt import Bcrypt
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 import stripe
 import os
-from .models import db, Buy
 
 api = Blueprint('api', __name__)
-bcrypt = Bcrypt() 
-
+bcrypt = Bcrypt()
 CORS(api)
-
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+
+
+@api.route('/users', methods=['POST'])
+def register_user():
+    body = request.get_json()
+    if not body or "email" not in body or "password" not in body:
+        return jsonify({"msg": "Faltan datos"}), 400
+    if User.query.filter_by(email=body['email']).first():
+        return jsonify({"msg": "El usuario ya existe"}), 400
+
+    hashed_password = bcrypt.generate_password_hash(
+        body['password']).decode('utf-8')
+    new_user = User(email=body['email'],
+                    password=hashed_password, is_active=True)
+    db.session.add(new_user)
+    db.session.commit()
+    return jsonify({"msg": "Usuario registrado", "user": new_user.serialize()}), 201
+
+
+@api.route('/login', methods=['POST'])
+def handle_login():
+    body = request.get_json()
+    if not body or "email" not in body or "password" not in body:
+        return jsonify({"msg": "Faltan credenciales"}), 400
+
+    user = User.query.filter_by(email=body.get("email")).first()
+    if user and bcrypt.check_password_hash(user.password, body.get("password")):
+        token = create_access_token(identity=str(user.id))
+        return jsonify({"access_token": token, "user": user.serialize()}), 200
+    return jsonify({"msg": "Email o contraseña incorrectos"}), 401
+
 
 @api.route('/registro-empresa', methods=['POST'])
 def registrar_empresa():
     body = request.get_json()
     if not body:
-        return jsonify({"msg": "Falta el cuerpo de la petición"}), 400
-    
-    required = ['nombre_legal', 'cif_nif', 'email', 'password']
-    for field in required:
-        if field not in body:
-            return jsonify({"msg": f"Falta el campo: {field}"}), 400
-
-    if Company.query.filter_by(email=body['email']).first():
+        return jsonify({"msg": "Falta el cuerpo"}), 400
+    if Company.query.filter_by(email=body.get('email')).first():
         return jsonify({"msg": "El email ya está registrado"}), 400
-    
-    hashed_password = bcrypt.generate_password_hash(body['password']).decode('utf-8')
-    
+
+    hashed = bcrypt.generate_password_hash(body['password']).decode('utf-8')
     new_company = Company(
-        nombre_legal=body['nombre_legal'],
-        cif_nif=body['cif_nif'],
-        email=body['email'],
-        password=hashed_password
-    )
-    
+        nombre_legal=body['nombre_legal'], cif_nif=body['cif_nif'], email=body['email'], password=hashed)
     db.session.add(new_company)
     db.session.commit()
-    
-    return jsonify({"msg": "Empresa registrada con éxito", "company": new_company.serialize()}), 201
+    return jsonify({"msg": "Empresa registrada", "company": new_company.serialize()}), 201
+
 
 @api.route('/event', methods=['POST'])
 def create_event():
     body = request.get_json()
-    if body is None:
-        return jsonify({"msg": "El cuerpo de la petición debe ser JSON"}), 400
-
-    required_fields = ['title', 'description', 'date', 'location', 'price', 'capacity', 'category', 'company_id']
-    for field in required_fields:
-        if field not in body:
-            return jsonify({"msg": f"Falta el campo obligatorio: {field}"}), 400
-
     try:
-        event_date = datetime.fromisoformat(body['date'].replace("Z", "+00:00"))
-    except ValueError:
-        return jsonify({"msg": "Formato de fecha inválido. Usa ISO 8601"}), 400
+        event_date = datetime.fromisoformat(
+            body['date'].replace("Z", "+00:00"))
+        new_event = Event(title=body['title'], description=body['description'], date=event_date,
+                          location=body['location'], price=body['price'], capacity=body['capacity'],
+                          category=body['category'], company_id=body['company_id'])
+        db.session.add(new_event)
+        db.session.commit()
+        return jsonify({"msg": "Evento creado", "event": new_event.serialize()}), 201
+    except Exception as e:
+        return jsonify({"msg": str(e)}), 400
 
-    company = db.session.get(Company, body['company_id'])
-    if not company:
-        return jsonify({"msg": "La empresa (company_id) especificada no existe"}), 404
-
-    new_event = Event(
-        title=body['title'],
-        description=body['description'],
-        date=event_date,
-        location=body['location'],
-        price=body['price'],
-        capacity=body['capacity'],
-        category=body['category'],
-        image_url=body.get('image_url'),
-        company_id=body['company_id']
-    )
-    db.session.add(new_event)
-    db.session.commit()
-    return jsonify({"msg": "Evento creado exitosamente", "event": new_event.serialize()}), 201
 
 @api.route('/event', methods=['GET'])
 def get_all_events():
-    events = Event.query.all()
-    return jsonify([event.serialize() for event in events]), 200
+    return jsonify([event.serialize() for event in Event.query.all()]), 200
 
-@api.route('/users', methods=['POST'])
-def register_user():
-    body = request.get_json()
-    if body is None:
-        return jsonify({"msg": "El cuerpo de la petición debe ser JSON"}), 400
-    return jsonify({"msg": "Usuario registrado"}), 201
-
-@api.route('/companies', methods=['POST'])
-def register_company_dev():
-    return jsonify({"msg": "Empresa registrada (endpoint developer)"}), 201
 
 @api.route('/create-checkout-session', methods=['POST'])
 def create_checkout_session():
     data = request.get_json()
-    event_id = data.get('event_id')
-
-    event = Event.query.get(event_id)
+    event = Event.query.get(data.get('event_id'))
     if not event:
         return jsonify({'error': 'Evento no encontrado'}), 404
-
-    try:
-        unit_amount = int(event.price * 100) 
-
-        checkout_session = stripe.checkout.Session.create(
-            payment_method_types=['card'],
-            line_items=[{
-                'price_data': {
-                    'currency': 'eur',
-                    'unit_amount': unit_amount,
-                    'product_data': {
-                        'name': event.title,
-                    },
-                },
-                'quantity': 1,
-            }],
-            mode='payment',
-            success_url='https://literate-goldfish-696g459vpr7rcxqj7-3000.app.github.dev/success',
-            cancel_url='https://literate-goldfish-696g459vpr7rcxqj7-3000.app.github.dev/single/1',
-        )
-        return jsonify({'url': checkout_session.url}), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 400
-    
-@api.route('/confirm-purchase', methods=['POST'])
-def confirm_purchase():
-    data = request.get_json()
-    user_id = data.get('user_id')
-    event_id = data.get('event_id')
-
-    if not user_id or not event_id:
-        return jsonify({"msg": "Datos incompletos"}), 400
-
-    event = Event.query.get(event_id)
-    if not event:
-        return jsonify({"msg": "Evento no encontrado"}), 404
-
-    if event.capacity <= 0:
-        return jsonify({"msg": "No quedan entradas"}), 400
-
-    try:
-        event.capacity -= 1
-        
-        new_buy = Buy(user_id=user_id, event_id=event_id)
-        db.session.add(new_buy)
-        
-        db.session.commit()
-        return jsonify({"msg": "Compra registrada con éxito y stock actualizado"}), 201
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"msg": f"Error al guardar: {str(e)}"}), 500
-      
-    return jsonify({"msg": "Empresa registrada (endpoint developer)"}), 201
+    checkout_session = stripe.checkout.Session.create(
+        payment_method_types=['card'],
+        line_items=[{'price_data': {'currency': 'eur', 'unit_amount': int(
+            event.price * 100), 'product_data': {'name': event.title}}, 'quantity': 1}],
+        mode='payment', success_url=f"{os.getenv('FRONTEND_URL')}/success", cancel_url=f"{os.getenv('FRONTEND_URL')}/single/{event.id}",
+    )
+    return jsonify({'url': checkout_session.url}), 200
 
 
 @api.route("/follow/event/<int:event_id>", methods=["POST"])
+@jwt_required()
 def follow_event(event_id):
-
-    user_id = 1
-
-    event = Event.query.get(event_id)
-
-    if event is None:
-        return jsonify({"msg": "Event not found"}), 404
-
-    already_follow = UserEventFollow.query.filter_by(
-        user_id=user_id,
-        event_id=event_id
-    ).first()
-
-    if already_follow:
-        return jsonify({"msg": "You already follow this event"}), 400
-
-    new_follow = UserEventFollow(
-        user_id=user_id,
-        event_id=event_id
-    )
-
-    db.session.add(new_follow)
+    user_id = int(get_jwt_identity())
+    if UserEventFollow.query.filter_by(user_id=user_id, event_id=event_id).first():
+        return jsonify({"msg": "Ya sigues este evento"}), 400
+    db.session.add(UserEventFollow(user_id=user_id, event_id=event_id))
     db.session.commit()
+    return jsonify({"msg": "Evento seguido"}), 201
 
-    return jsonify({"msg": "Event followed successfully"}), 201
 
 @api.route("/follow/event/<int:event_id>", methods=["DELETE"])
+@jwt_required()
 def unfollow_event(event_id):
-
-    user_id = 1
-
+    user_id = int(get_jwt_identity())
     follow = UserEventFollow.query.filter_by(
-        user_id=user_id,
-        event_id=event_id
-    ).first()
-
-    if follow is None:
-        return jsonify({"msg": "You are not following this event"}), 404
-
+        user_id=user_id, event_id=event_id).first()
+    if not follow:
+        return jsonify({"msg": "No sigues este evento"}), 404
     db.session.delete(follow)
     db.session.commit()
+    return jsonify({"msg": "Evento dejado de seguir"}), 200
 
-    return jsonify({"msg": "Event unfollowed successfully"}), 200
 
 @api.route("/users/followed-events", methods=["GET"])
+@jwt_required()
 def get_followed_events():
-
-    user_id = 1
-
+    user_id = int(get_jwt_identity())
     follows = UserEventFollow.query.filter_by(user_id=user_id).all()
-
-    results = []
-
-    for follow in follows:
-        results.append(follow.event.serialize())
-
-    return jsonify(results), 200
+    return jsonify([follow.event.serialize() for follow in follows]), 200
