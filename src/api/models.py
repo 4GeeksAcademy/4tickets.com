@@ -1,17 +1,20 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import String, Boolean, Float, Integer, DateTime, Text, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from datetime import datetime
+from datetime import datetime, timezone
 
 db = SQLAlchemy()
+
 
 class User(db.Model):
     __tablename__ = 'user'
     id: Mapped[int] = mapped_column(primary_key=True)
-    email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
+    email: Mapped[str] = mapped_column(
+        String(120), unique=True, nullable=False)
     name: Mapped[str] = mapped_column(String(120), nullable=True)
     password: Mapped[str] = mapped_column(nullable=False)
-    is_active: Mapped[bool] = mapped_column(Boolean(), nullable=True, default=True)
+    is_active: Mapped[bool] = mapped_column(
+        Boolean(), nullable=True, default=True)
 
     followed_events = db.relationship("UserEventFollow", back_populates="user")
 
@@ -22,16 +25,20 @@ class User(db.Model):
             "name": self.name,
         }
 
+
 class Company(db.Model):
     __tablename__ = 'company'
     id: Mapped[int] = mapped_column(primary_key=True)
     nombre_legal: Mapped[str] = mapped_column(String(150), nullable=False)
-    cif_nif: Mapped[str] = mapped_column(String(20), unique=True, nullable=False)
-    email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
+    cif_nif: Mapped[str] = mapped_column(
+        String(20), unique=True, nullable=False)
+    email: Mapped[str] = mapped_column(
+        String(120), unique=True, nullable=False)
     name: Mapped[str] = mapped_column(String(120), nullable=True)
     password: Mapped[str] = mapped_column(nullable=False)
-    is_active: Mapped[bool] = mapped_column(Boolean(), nullable=True, default=True)
-    
+    is_active: Mapped[bool] = mapped_column(
+        Boolean(), nullable=True, default=True)
+
     events = relationship('Event', backref='company', lazy=True)
 
     def serialize(self):
@@ -43,6 +50,7 @@ class Company(db.Model):
             "name": self.name,
             "is_active": self.is_active
         }
+
 
 class Event(db.Model):
     __tablename__ = 'event'
@@ -74,6 +82,20 @@ class Event(db.Model):
             "is_active": self.is_active,
             "company_id": self.company_id
         }
+
+
+class Buy(db.Model):
+    __tablename__ = 'buy'
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey('user.id'), nullable=False)
+    event_id: Mapped[int] = mapped_column(
+        ForeignKey('event.id'), nullable=False)
+    purchase_date: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+        )
+
+    user = relationship('User', backref='buys')
+    event = relationship('Event', backref='buys')
     
 class UserEventFollow(db.Model):
     __tablename__ = "user_event_follow"
@@ -88,5 +110,6 @@ class UserEventFollow(db.Model):
         return {
             "id": self.id,
             "user_id": self.user_id,
-            "event_id": self.event_id
-        }    
+            "event_id": self.event_id,
+            "purchase_date": self.purchase_date.isoformat()
+        }
