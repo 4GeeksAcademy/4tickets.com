@@ -1,10 +1,19 @@
-import React from "react";
+import React, { useEffect } from "react"
+import { Section } from "../components/Section";
+import { SearchBar } from "../components/SearchBar.jsx";
+import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
+import { AtroposCard } from "../components/Atropos.jsx"
+import { User } from "../components/User";
 import { Link } from "react-router-dom";
-import useGlobalReducer from "../hooks/useGlobalReducer";
 export const Home = () => {
 
 	const { store } = useGlobalReducer();
 	return (
+		<>
+        <Link to="/create-event" className="btn btn-warning mt-3">
+            Test Create Event
+        </Link>
+		<Section />
 		<div className="container my-5">
 			<h1 className="mb-4">Eventos disponibles</h1>
 			<div className="row">

@@ -12,6 +12,8 @@ import { Demo } from "./pages/Demo";
 // 1. IMPORTA TU NUEVA VISTA AQUÍ
 import { Register } from "./pages/Register";
 import { Success } from "./pages/Success";
+import { CompanyDashboard } from "./pages/CompanyDashboard";
+import { CreateEvent } from "./pages/CreateEvent";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -32,6 +34,9 @@ export const router = createBrowserRouter(
       {/* 2. AÑADE TU NUEVA RUTA AQUÍ */}
       <Route path="/registro" element={<Register />} />
       <Route path="/success" element={<Success />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/company-dashboard" element={<CompanyDashboard />} />
+      <Route path="/create-event" element={<CreateEvent />} />
 
     </Route>
   )

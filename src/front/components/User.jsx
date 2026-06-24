@@ -1,35 +1,45 @@
 import React from "react"
+import { Link } from "react-router-dom";
 
 
 export const User = () => {
     return (
-        <div>
-            <div className="card mb-3">
-                <div className="card-body">
-                    <h5 className="card-title">Buy Tickets</h5>
+        <div className="card shadow-sm">
+            <div className="card-body">
 
-                    <p className="card-text">
-                        Find events and buy your tickets quickly and safely.
-                    </p>
+                <h4 className="card-title mb-3">
+                    One Platform for Everyone
+                </h4>
 
-                    <button className="btn btn-primary">
-                        Find Events
-                    </button>
-                </div>
-            </div>
+                <p className="card-text">
+                    Discover events, buy tickets, and create unforgettable experiences.
+                </p>
 
-            <div className="card">
-                <div className="card-body">
-                    <h5 className="card-title">Register Company</h5>
+                <ul className="list-group list-group-flush mb-4">
+                    <li className="list-group-item">
+                        🎟 Buy tickets in seconds            
+                    </li>
 
-                    <p className="card-text">
-                        Create events and sell tickets online with 4Tickets.
-                    </p>
+                    <li className="list-group-item">
+                        📅 Discover upcoming events
+                    </li>
 
-                    <button className="btn btn-primary">
-                        Start Selling
-                    </button>
-                </div>
+                    <li className="list-group-item">
+                        🏢 Create and manage events
+                    </li>
+
+                    <li className="list-group-item">
+                        🔒 Secure payments
+                    </li>
+                </ul>
+
+                <Link
+                    to="/register"
+                    className="btn btn-primary w-100"
+                >
+                    Create Account
+                </Link>
+
             </div>
         </div>
     );

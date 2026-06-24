@@ -16,6 +16,8 @@ class User(db.Model):
     is_active: Mapped[bool] = mapped_column(
         Boolean(), nullable=True, default=True)
 
+    followed_events = db.relationship("UserEventFollow", back_populates="user")
+
     def serialize(self):
         return {
             "id": self.id,
@@ -63,8 +65,8 @@ class Event(db.Model):
     image_url: Mapped[str] = mapped_column(String(500), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean(), default=True)
 
-    company_id: Mapped[int] = mapped_column(
-        ForeignKey('company.id'), nullable=False)
+    company_id: Mapped[int] = mapped_column(ForeignKey('company.id'), nullable=False)
+    followers = db.relationship("UserEventFollow", back_populates="event")
 
     def serialize(self):
         return {
@@ -94,6 +96,15 @@ class Buy(db.Model):
 
     user = relationship('User', backref='buys')
     event = relationship('Event', backref='buys')
+    
+class UserEventFollow(db.Model):
+    __tablename__ = "user_event_follow"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    event_id = db.Column(db.Integer, db.ForeignKey("event.id"), nullable=False)
+    user = db.relationship("User", back_populates="followed_events")
+    event = db.relationship("Event", back_populates="followers")
 
     def serialize(self):
         return {

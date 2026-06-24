@@ -3,10 +3,10 @@ import { UserRegisterForm } from "../components/UserRegisterForm";
 import { CompanyRegisterForm } from "../components/CompanyRegisterForm";
 
 export const Register = () => {
-    // Estado para controlar qué formulario se muestra (true = Usuario, false = Empresa)
-    const [isUserView, setIsUserView] = useState(true);
+     // Estado para controlar qué formulario se muestra (true = Usuario, false = Empresa)
+     const [isUserView, setIsUserView] = useState(true);
 
-    return (
+     return (
         <div className="container mt-5">
             <div className="text-center mb-4">
                 <h1 className="mb-4">Registro en 4tickets</h1>

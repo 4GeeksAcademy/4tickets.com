@@ -35,3 +35,13 @@ export const Layout = () => {
 		</ScrollToTop>
 	);
 };
+    return (
+        <ScrollToTop>
+        
+            <Navbar />
+        <div className = "bg-primary-subtle p-4">
+            <Outlet />
+        </div>   
+        </ScrollToTop>
+    )
+}
