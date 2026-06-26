@@ -1,36 +1,111 @@
 import React, { useState } from "react";
+import { BASE_BACK_URL } from "../core/constantsUrl";
 import { useNavigate } from "react-router-dom";
 
 export const Login = () => {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
+  const [success, setSuccess] = useState(false);
+  const navigate = useNavigate();
 
-    const handleLogin = async (e) => {
-        e.preventDefault();
-        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/login`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password })
-        });
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-        if (response.ok) {
-            const data = await response.json();
-            localStorage.setItem("token", data.access_token);
-            navigate("/");
-        } else {
-            alert("Credenciales incorrectas");
-        }
-    };
+    // Limpia el mensaje anterior
+    setMessage("");
 
-    return (
-        <div className="container mt-5">
-            <form onSubmit={handleLogin} className="col-md-6 mx-auto">
-                <h2>Iniciar Sesión</h2>
-                <input type="email" placeholder="Email" className="form-control mb-2" onChange={(e) => setEmail(e.target.value)} required />
-                <input type="password" placeholder="Password" className="form-control mb-2" onChange={(e) => setPassword(e.target.value)} required />
-                <button type="submit" className="btn btn-primary">Entrar</button>
+    try {
+      const response = await fetch(`${BASE_BACK_URL}api/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          email,
+          password
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setMessage("Login successful");
+        setSuccess(true);
+
+        localStorage.setItem("token", data.token);
+        // Redirigir después
+        navigate("/");
+        
+        
+      } else {
+        setMessage("Invalid email or password");
+        setSuccess(false);
+      }
+
+    } catch (error) {
+      console.log(error);
+      setMessage("Server error");
+      setSuccess(false);
+    }
+  };
+
+  return (
+    <div className="container py-5">
+      <div className="row justify-content-center">
+
+        <div className="col-md-6 col-lg-4">
+
+          <div className="card shadow p-4">
+
+            <h2 className="text-center mb-3">
+              Login
+            </h2>
+
+            <p className="text-center text-muted">
+              Access your account
+            </p>
+
+            {message && (
+              <div className={`alert ${success ? "alert-success" : "alert-danger"}`}>
+                {message}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit}>
+
+              <input
+                type="email"
+                className="form-control mb-3"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+
+              <input
+                type="password"
+                className="form-control mb-3"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+
+              <button
+                type="submit"
+                className="btn btn-primary w-100"
+              >
+                Login
+              </button>
+
             </form>
+
+          </div>
+
         </div>
-    );
+
+      </div>
+    </div>
+  );
 };

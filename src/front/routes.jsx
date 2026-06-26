@@ -4,6 +4,7 @@ import { Home } from "./pages/Home";
 import { Single } from "./pages/Single";
 import { Login } from "./pages/Login";
 import { Register } from "./pages/Register";
+import { CreateEvent } from "./pages/CreateEvent";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -12,6 +13,8 @@ export const router = createBrowserRouter(
       <Route path="/single/:theId" element={<Single />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/create-event" element={<CreateEvent />} />
+
     </Route>
   )
 );

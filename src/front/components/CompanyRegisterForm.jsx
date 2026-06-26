@@ -53,7 +53,7 @@ export const CompanyRegisterForm = () => {
 
     return (
         <div className="card p-4 shadow-sm border-primary">
-            <h3 className="text-center mb-3 text-primary">Crear cuenta de Empresa</h3>
+            <h3 className="text-center mb-3">Crear cuenta de Empresa</h3>
             <form onSubmit={handleSubmit}>
                 <div className="mb-3">
                     <label className="form-label">Razón Social (Nombre de la empresa)</label>

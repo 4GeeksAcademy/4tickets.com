@@ -15,7 +15,7 @@ export const Register = () => {
                 <div className="btn-group" role="group">
                     <button 
                         type="button" 
-                        className={`btn ${isUserView ? 'btn-primary' : 'btn-outline-primary'}`}
+                        className={`btn ${isUserView ? 'btn btn-success' : 'btn-outline-primary'}`}
                         onClick={() => setIsUserView(true)}
                     >
                         Soy Usuario
