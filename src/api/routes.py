@@ -39,8 +39,23 @@ def handle_login():
     user = User.query.filter_by(email=body.get("email")).first()
     if user and bcrypt.check_password_hash(user.password, body.get("password")):
         token = create_access_token(identity=str(user.id))
-        return jsonify({"access_token": token, "user": user.serialize()}), 200
-    return jsonify({"msg": "Email o contraseña incorrectos"}), 401
+        return jsonify({"access_token": token, 
+                        "accountType": "user",
+                        "user": user.serialize()}), 200
+    
+
+    company = Company.query.filter_by(email=body.get("email")).first()
+
+    if company and bcrypt.check_password_hash(company.password, body.get("password")):
+        token = create_access_token(identity=str(company.id))
+
+        return jsonify({
+            "access_token": token,
+            "accountType": "company",
+            "company": company.serialize()
+        }), 200
+
+    return jsonify({"msg": "Invalid email or password"}), 401
 
 
 @api.route('/registro-empresa', methods=['POST'])

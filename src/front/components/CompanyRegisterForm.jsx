@@ -1,11 +1,13 @@
-import React, { useState, useContext } from "react";
-// Dependiendo de cómo se llame el archivo de Contexto en esta nueva plantilla, 
-// la importación será algo parecido a esto. A veces está en Layout.jsx o un AppContext.jsx
-// import { Context } from "../Layout"; 
+import React, { useState } from "react";
+import { BASE_BACK_URL } from "../core/constantsUrl";
+import { useNavigate } from "react-router-dom";
+
 
 export const CompanyRegisterForm = () => {
-    // Descomenta y ajusta la importación del Contexto cuando confirmes el nombre
-    // const { store, dispatch } = useContext(Context); 
+    const [message, setMessage] = useState("");
+    const [success, setSuccess] = useState(false);
+    const navigate = useNavigate();
+
 
     const [formData, setFormData] = useState({
         companyName: "",
@@ -21,39 +23,55 @@ export const CompanyRegisterForm = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        setMessage("");
+
         try {
-            console.log("Iniciando simulación de fetch al backend para EMPRESA...");
+            const response = await fetch(`${BASE_BACK_URL}api/registro-empresa`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                nombre_legal: formData.companyName,
+                cif_nif: formData.cif,
+                email: formData.email,
+                password: formData.password
+            })
+        });
 
-            // Aquí irá tu fetch real cuando el backend esté listo:
-            /*
-            const response = await fetch(import.meta.env.VITE_BACKEND_URL + "/api/companies", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formData)
+        const data = await response.json();
+
+        if (response.ok) {
+            setMessage("Company registered successfully");
+            setSuccess(true);
+            navigate("/login");
+
+            setFormData({
+                companyName: "",
+                cif: "",
+                email: "",
+                password: ""
             });
-            
-            if (!response.ok) throw new Error("Error en el registro de la empresa");
-            const data = await response.json();
-            */
 
-            console.log("¡Datos de empresa enviados con éxito!", formData);
-
-            // Si el registro va bien, podemos enviar un mensaje al store global
-            // dispatch({ type: 'set_hello', payload: '¡Empresa registrada correctamente!' });
-
-            alert("¡Empresa registrada con éxito!");
-
-            // Aquí añadiremos el navigate('/login') de react-router-dom más adelante
-
-        } catch (error) {
-            console.error("Hubo un error:", error);
-            alert("Error al registrar la empresa.");
+        } else {
+            setMessage(data.msg || "Error registering company");
+            setSuccess(false);
         }
-    };
 
+    } catch (error) {
+        console.error(error);
+        setMessage("Server error");
+        setSuccess(false);
+    }
+};
     return (
         <div className="card p-4 shadow-sm border-primary">
             <h3 className="text-center mb-3">Crear cuenta de Empresa</h3>
+            {message && (
+                <div className={`alert ${success ? "alert-success" : "alert-danger"}`}>
+                {message}
+                </div>
+            )}
             <form onSubmit={handleSubmit}>
                 <div className="mb-3">
                     <label className="form-label">Razón Social (Nombre de la empresa)</label>

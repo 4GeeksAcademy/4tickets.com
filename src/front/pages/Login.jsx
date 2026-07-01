@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { BASE_BACK_URL } from "../core/constantsUrl";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import useGlobalReducer from "../hooks/useGlobalReducer";
 
 export const Login = () => {
   const [email, setEmail] = useState("");
@@ -8,6 +10,7 @@ export const Login = () => {
   const [message, setMessage] = useState("");
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
+  const { store, dispatch } = useGlobalReducer();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -33,7 +36,21 @@ export const Login = () => {
         setMessage("Login successful");
         setSuccess(true);
 
-        localStorage.setItem("token", data.token);
+        localStorage.setItem("token", data.access_token);
+
+        if (data.accountType === "company") {
+            dispatch({
+                      type: "login_company",
+                      payload: data.company
+                    });
+        } 
+        else if (data.accountType === "user") {
+            dispatch({
+                      type: "login_user",
+                      payload: data.user
+                     });
+          } 
+        
         // Redirigir después
         navigate("/");
         
@@ -100,6 +117,18 @@ export const Login = () => {
               </button>
 
             </form>
+          
+            
+          <div className="text-center mt-3">
+            <Link
+              to="/forgot-password"
+              className="text-decoration-none text-muted small"
+            >
+            Forgot your password?
+            </Link>
+          
+          </div>
+            
 
           </div>
 

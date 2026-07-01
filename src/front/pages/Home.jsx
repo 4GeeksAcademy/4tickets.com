@@ -9,10 +9,6 @@ import { Link } from "react-router-dom";
 export const Home = () => {
   return (
     <>
-      
-	  <Link to="/create-event" className="btn btn-warning mt-3">
-				Test Create Event
-	  </Link>
      
 	  <Section />
 
