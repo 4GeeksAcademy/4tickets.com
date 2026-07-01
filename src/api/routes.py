@@ -82,7 +82,8 @@ def create_event():
             body['date'].replace("Z", "+00:00"))
         new_event = Event(title=body['title'], description=body['description'], date=event_date,
                           location=body['location'], price=body['price'], capacity=body['capacity'],
-                          category=body['category'], company_id=body['company_id'])
+                          category=body['category'], image_url=body['image_url'],
+                          company_id=body['company_id'])
         db.session.add(new_event)
         db.session.commit()
         return jsonify({"msg": "Evento creado", "event": new_event.serialize()}), 201
@@ -140,3 +141,6 @@ def get_followed_events():
     user_id = int(get_jwt_identity())
     follows = UserEventFollow.query.filter_by(user_id=user_id).all()
     return jsonify([follow.event.serialize() for follow in follows]), 200
+
+
+

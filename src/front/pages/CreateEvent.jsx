@@ -13,12 +13,14 @@ export const CreateEvent = () => {
   const [tickets, setTickets] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [category, setCategory] = useState("");
+
   
   
   
   
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const companyId = localStorage.getItem("company_id");
 
     const newEvent = {
       title: eventName,
@@ -29,7 +31,7 @@ export const CreateEvent = () => {
       capacity: Number(tickets),
       category,
       image_url: imageUrl,
-      company_id: 1
+      company_id: Number(companyId)
     };
 
     try {
@@ -51,7 +53,7 @@ export const CreateEvent = () => {
       if (response.ok) {
         alert("Event created successfully");
       } else {
-        alert("Error creating event");
+        alert(data.msg);
       }
 
     } catch (error) {

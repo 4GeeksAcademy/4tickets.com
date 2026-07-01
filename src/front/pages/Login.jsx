@@ -39,6 +39,10 @@ export const Login = () => {
         localStorage.setItem("token", data.access_token);
 
         if (data.accountType === "company") {
+            localStorage.setItem("company_id", data.company.id);
+            localStorage.setItem("company_name", data.company.nombre_legal);
+
+
             dispatch({
                       type: "login_company",
                       payload: data.company
