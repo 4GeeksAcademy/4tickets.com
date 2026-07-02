@@ -39,8 +39,23 @@ def handle_login():
     user = User.query.filter_by(email=body.get("email")).first()
     if user and bcrypt.check_password_hash(user.password, body.get("password")):
         token = create_access_token(identity=str(user.id))
-        return jsonify({"access_token": token, "user": user.serialize()}), 200
-    return jsonify({"msg": "Email o contraseña incorrectos"}), 401
+        return jsonify({"access_token": token, 
+                        "accountType": "user",
+                        "user": user.serialize()}), 200
+    
+
+    company = Company.query.filter_by(email=body.get("email")).first()
+
+    if company and bcrypt.check_password_hash(company.password, body.get("password")):
+        token = create_access_token(identity=str(company.id))
+
+        return jsonify({
+            "access_token": token,
+            "accountType": "company",
+            "company": company.serialize()
+        }), 200
+
+    return jsonify({"msg": "Invalid email or password"}), 401
 
 
 @api.route('/registro-empresa', methods=['POST'])
@@ -67,7 +82,8 @@ def create_event():
             body['date'].replace("Z", "+00:00"))
         new_event = Event(title=body['title'], description=body['description'], date=event_date,
                           location=body['location'], price=body['price'], capacity=body['capacity'],
-                          category=body['category'], company_id=body['company_id'])
+                          category=body['category'], image_url=body['image_url'],
+                          company_id=body['company_id'])
         db.session.add(new_event)
         db.session.commit()
         return jsonify({"msg": "Evento creado", "event": new_event.serialize()}), 201
@@ -125,3 +141,6 @@ def get_followed_events():
     user_id = int(get_jwt_identity())
     follows = UserEventFollow.query.filter_by(user_id=user_id).all()
     return jsonify([follow.event.serialize() for follow in follows]), 200
+
+
+
