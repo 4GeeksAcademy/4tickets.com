@@ -1,5 +1,5 @@
 from flask import request, jsonify, Blueprint
-from api.models import db, User, Company, Event, Buy, UserEventFollow
+from api.models import db, User, Company, Event, Buy, UserEventFollow, ContactMessage
 from flask_cors import CORS
 from datetime import datetime
 from flask_bcrypt import Bcrypt
@@ -143,4 +143,30 @@ def get_followed_events():
     return jsonify([follow.event.serialize() for follow in follows]), 200
 
 
+@api.route("/contact", methods=["POST"])
+def create_contact_message():
 
+    data = request.get_json()
+
+    name = data.get("name")
+    email = data.get("email")
+    subject = data.get("subject")
+    message = data.get("message")
+
+    if not name or not email or not subject or not message:
+        return jsonify({"msg": "All fields are required"}), 400
+
+    new_message = ContactMessage(
+        name=name,
+        email=email,
+        subject=subject,
+        message=message
+    )
+
+    db.session.add(new_message)
+    db.session.commit()
+
+    return jsonify({
+        "msg": "Message sent successfully",
+        "contact": new_message.serialize()
+    }), 201
