@@ -1,38 +1,51 @@
-import React, { useEffect } from "react";
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { Link, useSearchParams } from 'react-router-dom';
+import QRCode from "react-qr-code";
 
 export const Success = () => {
+    const [searchParams] = useSearchParams();
+    const ticketCode = searchParams.get("ticket_code");
+
     useEffect(() => {
         const confirmPurchase = async () => {
             try {
                 const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/confirm-purchase`, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: { 
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${localStorage.getItem("token")}`
+                    },
                     body: JSON.stringify({
-                        user_id: 1, 
-                        event_id: localStorage.getItem("last_event_id") 
+                        event_id: localStorage.getItem("last_event_id"),
+                        ticket_code: ticketCode
                     }),
                 });
                 if (response.ok) {
-                    console.log("¡Compra guardada en la base de datos!");
                     localStorage.removeItem("last_event_id");
                 }
             } catch (error) {
-                console.error("Error al confirmar:", error);
+                console.error("Confirmation error:", error);
             }
         };
 
-        confirmPurchase();
-    }, []);
+        if (ticketCode) confirmPurchase();
+    }, [ticketCode]);
 
     return (
         <div className="container mt-5 text-center">
-            <h1>¡Pago exitoso!</h1>
-            <p>Gracias por tu compra. Tu entrada ya está registrada.</p>
+            <h1>Payment successful!</h1>
+            <p>Thank you for your purchase.</p>
 
-            <Link to="/" className="btn btn-primary mt-3">
-                Volver a la página principal
-            </Link>
+            {ticketCode && (
+                <div className="my-4">
+                    <p><strong>Your ticket code:</strong> {ticketCode}</p>
+                    <div style={{ background: 'white', padding: '16px' }}>
+                        <QRCode value={ticketCode} size={150} />
+                    </div>
+                </div>
+            )}
+
+            <Link to="/" className="btn btn-primary mt-3">Return to main page</Link>
         </div>
     );
 };
