@@ -86,43 +86,36 @@ def get_all_events():
     return jsonify([event.serialize() for event in Event.query.all()]), 200
 
 
-@api.route('/create-checkout-session', methods=['POST', 'OPTIONS'])
+@api.route('/create-checkout-session', methods=['POST'])
 @jwt_required()
 def create_checkout_session():
-    user_id = int(get_jwt_identity())
-    data = request.get_json()
-    quantity = int(data.get('quantity', 1))
-    event = Event.query.get(data.get('event_id'))
-    if not event:
-        return jsonify({'error': 'Event not found'}), 404
-    
-    unique_ticket_code = secrets.token_urlsafe(16)
+    try:
+        data = request.get_json()
+        event_id = data.get('event_id')
+        event = Event.query.get(event_id)
+        
+        if not event:
+            return jsonify({'error': 'Event not found'}), 404
 
-    checkout_session = stripe.checkout.Session.create(
-        payment_method_types=['card'],
-        metadata={
-            'user_id': user_id, 
-            'event_id': event.id,
-            'ticket_code': unique_ticket_code,
-            'quantity': quantity
-        },
-
-        line_items=[{
-            'price_data': {
-                'currency': 'eur',
-                'unit_amount': int(event.price * 100),
-                'product_data': {'name': event.title}
-            }, 
-            'quantity': quantity,
-        }],
-        mode='payment',
-        success_url=f"{os.getenv('FRONTEND_URL')}/success",
-        cancel_url=f"{os.getenv('FRONTEND_URL')}/single/{event.id}",
-    )
-    return jsonify({
-    'url': checkout_session.url,
-    'ticket_code': unique_ticket_code
-    }), 200
+        checkout_session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=[{
+                'price_data': {
+                    'currency': 'eur',
+                    'product_data': {'name': event.title},
+                    'unit_amount': int(event.price * 100),
+                },
+                'quantity': 1,
+            }],
+            mode='payment',
+            success_url=os.getenv('FRONTEND_URL') + '/success?session_id={CHECKOUT_SESSION_ID}',
+            cancel_url=os.getenv('FRONTEND_URL') + '/single/' + str(event.id),
+        )
+        return jsonify({'url': checkout_session.url}), 200
+        
+    except Exception as e:
+        print(f"ERROR DE STRIPE: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
 
 @api.route("/follow/event/<int:event_id>", methods=["POST"])

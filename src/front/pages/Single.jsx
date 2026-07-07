@@ -15,7 +15,7 @@ export const Single = () => {
     const token = localStorage.getItem("token"); 
 
     if (!token) {
-        alert("Debes iniciar sesión para comprar tickets");
+        alert("You must log in to purchase tickets");
         return;
     }
 

@@ -25,6 +25,14 @@ app.config["JWT_SECRET_KEY"] = os.getenv(
     "JWT_SECRET_KEY", "super-secret-key-change-me")
 jwt = JWTManager(app)
 
+@app.before_request
+def handle_options_requests():
+    if request.method == 'OPTIONS':
+        response = jsonify({})
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
 
 db_url = os.getenv("DATABASE_URL")
 if db_url is not None:
