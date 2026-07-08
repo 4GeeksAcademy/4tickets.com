@@ -106,7 +106,7 @@ def create_checkout_session():
         payment_method_types=['card'],
         line_items=[{'price_data': {'currency': 'eur', 'unit_amount': int(
             event.price * 100), 'product_data': {'name': event.title}}, 'quantity': 1}],
-        mode='payment', success_url=f"{os.getenv('FRONTEND_URL')}/success", cancel_url=f"{os.getenv('FRONTEND_URL')}/single/{event.id}",
+        mode='payment', success_url=f"{os.getenv('FRONTEND_URL')}success", cancel_url=f"{os.getenv('FRONTEND_URL')}single/{event.id}",
     )
     return jsonify({'url': checkout_session.url}), 200
 

@@ -2,6 +2,7 @@ import React from "react";
 import { Link, useParams } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import { FollowButton } from "../components/FollowButton.jsx";
+import { BASE_BACK_URL } from "../core/constantsUrl.js";
 
 export const Single = () => {
     const { store } = useGlobalReducer();
@@ -12,7 +13,7 @@ export const Single = () => {
     const handlePayment = async () => {
         localStorage.setItem("last_event_id", event.id);
         try {
-            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/create-checkout-session`, {
+            const response = await fetch(`${BASE_BACK_URL}api/create-checkout-session`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -51,7 +52,7 @@ export const Single = () => {
         <div className="container my-5">
             <div className="card">
                 {event.image_url && (
-                    <img src={event.image_url} className="card-img-top" alt={event.title} />
+                    <img src={event.image_url} className="single-event-img card-img-top" alt={event.title} />
                 )}
                 <div className="card-body">
                     <h1>{event.title}</h1>

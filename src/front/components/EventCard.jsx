@@ -8,12 +8,13 @@ export const EventCard = ({ event }) => {
         {event.image_url && (
           <img
             src={event.image_url}
-            className="card-img-top"
+            className="card-img-top event-card-img"
             alt={event.title}
+          
           />
         )}
 
-        <div className="card-body">
+        <div className="card-body d-flex flex-column">
           <h5 className="card-title">{event.title}</h5>
 
           <p className="card-text">{event.description}</p>
@@ -26,7 +27,7 @@ export const EventCard = ({ event }) => {
             <strong>Capacity:</strong> {event.capacity}
           </p>
 
-          <Link to={`/single/${event.id}`} className="btn btn-primary">
+          <Link to={`/single/${event.id}`} className="btn btn-primary mt-auto">
             View Details
           </Link>
         </div>
