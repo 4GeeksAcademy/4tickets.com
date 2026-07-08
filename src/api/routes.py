@@ -96,6 +96,14 @@ def get_all_events():
     return jsonify([event.serialize() for event in Event.query.all()]), 200
 
 
+@api.route('/event/<int:event_id>', methods=['GET'])
+def get_single_event(event_id):
+    event = Event.query.get(event_id)
+    if not event:
+        return jsonify({"msg": "Evento no encontrado"}), 404
+    return jsonify(event.serialize()), 200
+
+
 @api.route('/create-checkout-session', methods=['POST'])
 def create_checkout_session():
     data = request.get_json()
