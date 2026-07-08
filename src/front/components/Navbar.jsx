@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer";
+import { toast } from "react-toastify";
 
 export const Navbar = () => {
     const { store, dispatch } = useGlobalReducer();
@@ -11,6 +12,7 @@ export const Navbar = () => {
         dispatch({
             type: "logout"
         });
+        toast.info("You have been logged out.");
 
         navigate("/");
     };
@@ -50,7 +52,38 @@ export const Navbar = () => {
                     </li>
                 </ul>
             </div>  
-          ) : (           
+          ) :  store.accountType === "user" ? (
+                    <div className="dropdown me-2">
+                        <button
+                            className="btn btn-outline-primary dropdown-toggle"
+                            type="button"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false"
+                        >
+                            {store.user?.name || store.user?.email}
+                        </button>
+
+                        <ul className="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <Link
+                                    className="dropdown-item"
+                                    to="/user-dashboard"
+                                >
+                                    Dashboard
+                                </Link>
+                            </li>
+
+                            <li>
+                                <button
+                                    className="dropdown-item"
+                                    onClick={handleLogout}
+                                >
+                                    Logout
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                ) : (         
 
                 
                     <Link className="btn btn-outline-primary me-2" to="/login">Login</Link>

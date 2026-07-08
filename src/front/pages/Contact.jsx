@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import { BASE_BACK_URL } from "../core/constantsUrl";
+import { toast } from "react-toastify";
 
 export const Contact = () => {
 
-    const [message, setMessage] = useState("");
-    const [success, setSuccess] = useState(false);
 
     const [formData, setFormData] = useState({
         name: "",
@@ -37,8 +36,7 @@ export const Contact = () => {
             const data = await response.json();
 
             if (response.ok) {
-                setMessage(data.msg);
-                setSuccess(true);
+                toast.success("Message sent successfully")
 
                 setFormData({
                     name: "",
@@ -47,14 +45,12 @@ export const Contact = () => {
                     message: ""
                 });
             } else {
-                setMessage(data.msg || "Something went wrong");
-                setSuccess(false);
+                toast.error(data.msg || "Something went wrong");
             }
 
         } catch (error) {
             console.log(error);
-            setMessage("Server error");
-            setSuccess(false);
+            toast.error("Server error. Please try again.");
         }
     };
 
@@ -157,13 +153,7 @@ export const Contact = () => {
 
                                 <button className="btn btn-warning w-100" type="submit">
                                     Send Message
-                                </button>
-
-                                {message && (
-                                    <div className={`alert ${success ? "alert-success" : "alert-danger"} mt-3`}>
-                                        {message}
-                                    </div>
-                                )}
+                                </button>                           
 
                             </form>
 

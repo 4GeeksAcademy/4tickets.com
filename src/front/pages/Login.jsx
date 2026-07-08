@@ -3,20 +3,16 @@ import { BASE_BACK_URL } from "../core/constantsUrl";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer";
+import { toast } from "react-toastify";
 
 export const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
-  const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
   const { store, dispatch } = useGlobalReducer();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Limpia el mensaje anterior
-    setMessage("");
 
     try {
       const response = await fetch(`${BASE_BACK_URL}api/login`, {
@@ -33,9 +29,7 @@ export const Login = () => {
       const data = await response.json();
 
       if (response.ok) {
-        setMessage("Login successful");
-        setSuccess(true);
-
+        toast.success("Login successful!");
         localStorage.setItem("token", data.access_token);
 
         if (data.accountType === "company") {
@@ -60,14 +54,12 @@ export const Login = () => {
         
         
       } else {
-        setMessage("Invalid email or password");
-        setSuccess(false);
+        toast.error(data.msg ||"Invalid email or password.");
       }
 
     } catch (error) {
       console.log(error);
-      setMessage("Server error");
-      setSuccess(false);
+      toast.error("Server error. Please try again.");
     }
   };
 
@@ -87,11 +79,6 @@ export const Login = () => {
               Access your account
             </p>
 
-            {message && (
-              <div className={`alert ${success ? "alert-success" : "alert-danger"}`}>
-                {message}
-              </div>
-            )}
 
             <form onSubmit={handleSubmit}>
 

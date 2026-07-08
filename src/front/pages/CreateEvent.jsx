@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { BASE_BACK_URL } from "../core/constantsUrl";
-
+import { toast } from "react-toastify";
 
 export const CreateEvent = () => {
 
@@ -51,13 +51,14 @@ export const CreateEvent = () => {
       console.log(data);
 
       if (response.ok) {
-        alert("Event created successfully");
+        toast.success("Event created successfully");
       } else {
-        alert(data.msg);
+        toast.error(data.msg || "Failed to create event");
       }
 
     } catch (error) {
       console.log(error);
+      toast.error("Server error. Please try again.");
     }
   };
 

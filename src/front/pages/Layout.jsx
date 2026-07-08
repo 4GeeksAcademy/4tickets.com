@@ -5,6 +5,7 @@ import { Navbar } from "../components/Navbar";
 import { Footer } from "../components/Footer";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import { BASE_BACK_URL } from "../core/constantsUrl";
+import { ToastNotification } from "../components/ToastNotification";
 
 
 export const Layout = () => {
@@ -38,6 +39,7 @@ export const Layout = () => {
                 <Outlet />
             </div>
             <Footer />
+            <ToastNotification />
         </ScrollToTop>
     );
 };
