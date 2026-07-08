@@ -3,6 +3,10 @@ export const initialStore = () => {
     message: null,
     events: [],
     followedEvents: [],
+    user: null,
+    company: null,
+    accountType: null
+   
   };
 };
 
@@ -35,7 +39,31 @@ export default function storeReducer(store, action = {}) {
           : [...store.followedEvents, eventId],
       };
 
-    default:
-      return store;
-  }
+        case "login_company":
+            return {
+                ...store,
+                company: action.payload,
+                user: null,
+                accountType: "company"
+            };
+
+        case "login_user":
+            return {
+                ...store,
+                user: action.payload,
+                company: null,
+                accountType: "user"
+            };
+
+        case "logout":
+            return {
+                ...store,
+                user: null,
+                company: null,
+                accountType: null
+            };
+
+        default:
+            return store;
+    }
 }
