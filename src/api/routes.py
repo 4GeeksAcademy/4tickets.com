@@ -7,6 +7,7 @@ import stripe
 import os
 import uuid
 import secrets
+import traceback
 
 api = Blueprint('api', __name__)
 bcrypt = Bcrypt()
@@ -91,28 +92,38 @@ def get_all_events():
 def create_checkout_session():
     try:
         data = request.get_json()
-        event_id = data.get('event_id')
-        event = Event.query.get(event_id)
-        
+        event_id = data.get("event_id")
+        quantity = int(data.get("quantity", 1))
+
+        if not event_id:
+            return jsonify({'error': 'event_id is required'}), 400
+        if quantity < 1:
+            quantity = 1
+
+        event = Event.query.get(event_id)         
         if not event:
             return jsonify({'error': 'Event not found'}), 404
 
         checkout_session = stripe.checkout.Session.create(
-            payment_method_types=['card'],
             line_items=[{
                 'price_data': {
                     'currency': 'eur',
+                    'unit_amount': int(round(event.price * 100)),  
                     'product_data': {'name': event.title},
-                    'unit_amount': int(event.price * 100),
                 },
-                'quantity': 1,
+                'quantity': quantity,               
             }],
             mode='payment',
+            metadata={                              
+                'event_id': str(event.id),
+                'quantity': str(quantity),
+                'user_id': str(get_jwt_identity()),
+            },
             success_url=os.getenv('FRONTEND_URL') + '/success?session_id={CHECKOUT_SESSION_ID}',
             cancel_url=os.getenv('FRONTEND_URL') + '/single/' + str(event.id),
         )
         return jsonify({'url': checkout_session.url}), 200
-        
+
     except Exception as e:
         print(f"ERROR DE STRIPE: {str(e)}")
         return jsonify({'error': str(e)}), 500
@@ -206,20 +217,71 @@ def get_user_tickets():
         
     return jsonify(tickets_list), 200
 
+
+def generate_unique_ticket_code():
+    while True:
+        code = secrets.token_hex(8).upper()
+        if not Buy.query.filter_by(ticket_code=code).first():
+            return code
+
+
 @api.route('/confirm-purchase', methods=['POST'])
 @jwt_required()
 def confirm_purchase():
-    data = request.get_json()
-    user_id = get_jwt_identity()
-    
-    new_buy = Buy(
-        user_id=user_id,
-        event_id=data['event_id'],
-        ticket_code=data['ticket_code']
-    )
-    db.session.add(new_buy)
-    db.session.commit()
-    return jsonify({"msg": "Purchase registered"}), 201
+    try:
+        user_id = get_jwt_identity()
+        body = request.get_json() or {}
+        session_id = body.get("session_id")       
+        if not session_id:
+            return jsonify({"message": "No session id provided"}), 400
+
+        session = stripe.checkout.Session.retrieve(session_id)
+
+        if session["payment_status"] != "paid":
+            return jsonify({"message": "Payment not completed"}), 400
+
+        existing = Buy.query.filter_by(stripe_session_id=session_id).all()
+        if existing:
+            event = Event.query.get(existing[0].event_id)
+            return jsonify({
+                "event": event.serialize() if event else None,
+                "tickets": [b.serialize() for b in existing]
+            }), 200
+
+        meta = session["metadata"]                   
+        if not meta or "event_id" not in meta:
+            return jsonify({"message": "event_id missing in metadata"}), 400
+
+        event_id = int(meta["event_id"])         
+        quantity = int(meta["quantity"]) if "quantity" in meta else 1
+
+        event = Event.query.get(event_id)
+        if not event:
+            return jsonify({"message": "Event not found"}), 404
+
+        tickets = []
+        for _ in range(quantity):
+            buy = Buy(
+                user_id=int(user_id),
+                event_id=event_id,
+                ticket_code=generate_unique_ticket_code(),
+                stripe_session_id=session_id
+            )
+            db.session.add(buy)
+            tickets.append(buy)
+
+        db.session.commit()
+
+        return jsonify({
+            "event": event.serialize(),
+            "tickets": [b.serialize() for b in tickets]
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        traceback.print_exc()
+        print(f"ERROR CONFIRM: {type(e).__name__}: {str(e)}")
+        return jsonify({"message": f"{type(e).__name__}: {str(e)}"}), 500
 
 
 

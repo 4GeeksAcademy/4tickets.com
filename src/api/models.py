@@ -100,14 +100,24 @@ class Buy(db.Model):
     user_id: Mapped[int] = mapped_column(ForeignKey('user.id'), nullable=False)
     event_id: Mapped[int] = mapped_column(ForeignKey('event.id'), nullable=False)
     ticket_code: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
-    
+    stripe_session_id: Mapped[str] = mapped_column(String(255), nullable=True)   # 👈 NUEVO
+
     purchase_date: Mapped[datetime] = mapped_column(
         DateTime, default=lambda: datetime.now(timezone.utc)
     )
 
     user = db.relationship('User', back_populates='buys')
     event = relationship('Event', backref='buys')
-    
+
+    def serialize(self):             
+        return {
+            "id": self.id,
+            "ticket_code": self.ticket_code,
+            "event_id": self.event_id,
+            "purchase_date": self.purchase_date.isoformat() if self.purchase_date else None,
+        }
+
+
 class UserEventFollow(db.Model):
     __tablename__ = "user_event_follow"
 
