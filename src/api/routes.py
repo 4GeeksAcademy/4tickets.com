@@ -266,6 +266,9 @@ def confirm_purchase():
         event = Event.query.get(event_id)
         if not event:
             return jsonify({"message": "Event not found"}), 404
+        
+        if event.capacity < quantity:
+            return jsonify({"message": "There are not enough places available"}), 400
 
         tickets = []
         for _ in range(quantity):
@@ -277,6 +280,8 @@ def confirm_purchase():
             )
             db.session.add(buy)
             tickets.append(buy)
+        
+        event.capacity -= quantity
 
         db.session.commit()
 
