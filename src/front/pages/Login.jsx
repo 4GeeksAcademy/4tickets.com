@@ -19,7 +19,7 @@ export const Login = () => {
     setMessage("");
 
     try {
-      const response = await fetch(`${BASE_BACK_URL}api/login`, {
+      const response = await fetch(`${BASE_BACK_URL}/api/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

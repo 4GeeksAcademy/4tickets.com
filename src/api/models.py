@@ -9,20 +9,30 @@ db = SQLAlchemy()
 class User(db.Model):
     __tablename__ = 'user'
     id: Mapped[int] = mapped_column(primary_key=True)
-    email: Mapped[str] = mapped_column(
-        String(120), unique=True, nullable=False)
+    email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
     name: Mapped[str] = mapped_column(String(120), nullable=True)
+    username: Mapped[str] = mapped_column(String(120), unique=True, nullable=True)
+    username_changed: Mapped[bool] = mapped_column(Boolean, default=False)
+    address: Mapped[str] = mapped_column(String(255), nullable=True)
+    phone: Mapped[str] = mapped_column(String(20), nullable=True)
+    avatar: Mapped[str] = mapped_column(String(500), nullable=True)
     password: Mapped[str] = mapped_column(nullable=False)
-    is_active: Mapped[bool] = mapped_column(
-        Boolean(), nullable=True, default=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
-    followed_events = db.relationship("UserEventFollow", back_populates="user")
+    followed_events = relationship("UserEventFollow", back_populates="user")
+    buys = db.relationship('Buy', back_populates='user')
 
     def serialize(self):
         return {
             "id": self.id,
             "email": self.email,
             "name": self.name,
+            "username": self.username,
+            "username_changed": self.username_changed,
+            "avatar": self.avatar,
+            "address": self.address,
+            "phone": self.phone,
+            "is_active": self.is_active
         }
 
 
@@ -88,15 +98,26 @@ class Buy(db.Model):
     __tablename__ = 'buy'
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey('user.id'), nullable=False)
-    event_id: Mapped[int] = mapped_column(
-        ForeignKey('event.id'), nullable=False)
+    event_id: Mapped[int] = mapped_column(ForeignKey('event.id'), nullable=False)
+    ticket_code: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+    stripe_session_id: Mapped[str] = mapped_column(String(255), nullable=True)   # 👈 NUEVO
+
     purchase_date: Mapped[datetime] = mapped_column(
         DateTime, default=lambda: datetime.now(timezone.utc)
-        )
+    )
 
-    user = relationship('User', backref='buys')
+    user = db.relationship('User', back_populates='buys')
     event = relationship('Event', backref='buys')
-    
+
+    def serialize(self):             
+        return {
+            "id": self.id,
+            "ticket_code": self.ticket_code,
+            "event_id": self.event_id,
+            "purchase_date": self.purchase_date.isoformat() if self.purchase_date else None,
+        }
+
+
 class UserEventFollow(db.Model):
     __tablename__ = "user_event_follow"
 
@@ -111,5 +132,4 @@ class UserEventFollow(db.Model):
             "id": self.id,
             "user_id": self.user_id,
             "event_id": self.event_id,
-            "purchase_date": self.purchase_date.isoformat()
         }
