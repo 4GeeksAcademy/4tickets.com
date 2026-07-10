@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { BASE_BACK_URL } from "../core/constantsUrl";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 
 export const CompanyRegisterForm = () => {
-    const [message, setMessage] = useState("");
-    const [success, setSuccess] = useState(false);
+    
     const navigate = useNavigate();
 
 
@@ -23,7 +23,7 @@ export const CompanyRegisterForm = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        setMessage("");
+       
 
         try {
             const response = await fetch(`${BASE_BACK_URL}api/registro-empresa`, {
@@ -42,8 +42,7 @@ export const CompanyRegisterForm = () => {
         const data = await response.json();
 
         if (response.ok) {
-            setMessage("Company registered successfully");
-            setSuccess(true);
+            toast.success("Company created successfully!")
             navigate("/login");
 
             setFormData({
@@ -54,24 +53,19 @@ export const CompanyRegisterForm = () => {
             });
 
         } else {
-            setMessage(data.msg || "Error registering company");
-            setSuccess(false);
+            toast.error(data.msg ||"Registration failed. Please try again.");
         }
 
     } catch (error) {
         console.error(error);
-        setMessage("Server error");
-        setSuccess(false);
+        toast.error("Something went wrong. Please try again.")
     }
 };
     return (
         <div className="card p-4 shadow-sm border-primary">
             <h3 className="text-center mb-3">Crear cuenta de Empresa</h3>
-            {message && (
-                <div className={`alert ${success ? "alert-success" : "alert-danger"}`}>
-                {message}
-                </div>
-            )}
+            
+             
             <form onSubmit={handleSubmit}>
                 <div className="mb-3">
                     <label className="form-label">Razón Social (Nombre de la empresa)</label>

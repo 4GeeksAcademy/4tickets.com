@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { BASE_BACK_URL } from "../core/constantsUrl";
-
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 export const CreateEvent = () => {
 
@@ -15,12 +16,15 @@ export const CreateEvent = () => {
   const [category, setCategory] = useState("");
 
   
+  const navigate = useNavigate();
+  
   
   
   
   const handleSubmit = async (e) => {
     e.preventDefault();
     const companyId = localStorage.getItem("company_id");
+    
 
     const newEvent = {
       title: eventName,
@@ -51,13 +55,15 @@ export const CreateEvent = () => {
       console.log(data);
 
       if (response.ok) {
-        alert("Event created successfully");
+        toast.success("Event created successfully");
+        navigate("/");
       } else {
-        alert(data.msg);
+        toast.error(data.msg || "Failed to create event");
       }
 
     } catch (error) {
       console.log(error);
+      toast.error("Server error. Please try again.");
     }
   };
 

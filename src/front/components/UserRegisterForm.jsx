@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { toast } from "react-toastify";
 
 export const UserRegisterForm = () => {
     const [formData, setFormData] = useState({
@@ -31,7 +32,7 @@ export const UserRegisterForm = () => {
             if (response.ok) {
                 const data = await response.json();
                 console.log("¡Datos enviados con éxito!", data);
-                alert("¡Usuario registrado con éxito!");
+                toast.success("Company created successfully!")
 
 
                 setFormData({
@@ -45,13 +46,14 @@ export const UserRegisterForm = () => {
 
                 const errorData = await response.json();
                 console.error("Error del servidor:", errorData);
-                alert(errorData.message || "Error al registrar el usuario. Revisa los datos.");
+                toast.error(data.msg || "Registration failed. Please try again.");
+                
             }
 
         } catch (error) {
 
             console.error("Hubo un error de conexión:", error);
-            alert("Error de conexión con el servidor.");
+            toast.error("Something went wrong. Please try again.")
         }
     };
 

@@ -1,6 +1,7 @@
 export const initialStore = () => {
   return {
     message: null,
+
     events: [],
     followedEvents: [],
     user: null,
