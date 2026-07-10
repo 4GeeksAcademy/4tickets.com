@@ -6,10 +6,12 @@ from flask_bcrypt import Bcrypt
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 import stripe
 import os
+import uuid
+import secrets
+import traceback
 
 api = Blueprint('api', __name__)
 bcrypt = Bcrypt()
-CORS(api)
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
 
@@ -17,17 +19,23 @@ stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 def register_user():
     body = request.get_json()
     if not body or "email" not in body or "password" not in body:
-        return jsonify({"msg": "Faltan datos"}), 400
+        return jsonify({"msg": "Data is missing"}), 400
     if User.query.filter_by(email=body['email']).first():
-        return jsonify({"msg": "El usuario ya existe"}), 400
+        return jsonify({"msg": "The user already exists"}), 400
 
     hashed_password = bcrypt.generate_password_hash(
         body['password']).decode('utf-8')
-    new_user = User(email=body['email'],
-                    password=hashed_password, is_active=True)
+    
+    new_user = User(
+        email=body['email'],
+        name=body.get('name'), 
+        password=hashed_password, 
+        is_active=True
+    )
+    
     db.session.add(new_user)
     db.session.commit()
-    return jsonify({"msg": "Usuario registrado", "user": new_user.serialize()}), 201
+    return jsonify({"msg": "Registered user", "user": new_user.serialize()}), 201
 
 
 @api.route('/login', methods=['POST'])
@@ -62,16 +70,16 @@ def handle_login():
 def registrar_empresa():
     body = request.get_json()
     if not body:
-        return jsonify({"msg": "Falta el cuerpo"}), 400
+        return jsonify({"msg": "The body is missing"}), 400
     if Company.query.filter_by(email=body.get('email')).first():
-        return jsonify({"msg": "El email ya está registrado"}), 400
+        return jsonify({"msg": "The email is already registered"}), 400
 
     hashed = bcrypt.generate_password_hash(body['password']).decode('utf-8')
     new_company = Company(
         nombre_legal=body['nombre_legal'], cif_nif=body['cif_nif'], email=body['email'], password=hashed)
     db.session.add(new_company)
     db.session.commit()
-    return jsonify({"msg": "Empresa registrada", "company": new_company.serialize()}), 201
+    return jsonify({"msg": "Registered company", "company": new_company.serialize()}), 201
 
 
 @api.route('/event', methods=['POST'])
@@ -86,7 +94,7 @@ def create_event():
                           company_id=body['company_id'])
         db.session.add(new_event)
         db.session.commit()
-        return jsonify({"msg": "Evento creado", "event": new_event.serialize()}), 201
+        return jsonify({"msg": "Event created", "event": new_event.serialize()}), 201
     except Exception as e:
         return jsonify({"msg": str(e)}), 400
 
@@ -96,19 +104,54 @@ def get_all_events():
     return jsonify([event.serialize() for event in Event.query.all()]), 200
 
 
-@api.route('/create-checkout-session', methods=['POST'])
-def create_checkout_session():
-    data = request.get_json()
-    event = Event.query.get(data.get('event_id'))
+@api.route('/event/<int:event_id>', methods=['GET'])
+def get_single_event(event_id):
+    event = Event.query.get(event_id)
     if not event:
-        return jsonify({'error': 'Evento no encontrado'}), 404
-    checkout_session = stripe.checkout.Session.create(
-        payment_method_types=['card'],
-        line_items=[{'price_data': {'currency': 'eur', 'unit_amount': int(
-            event.price * 100), 'product_data': {'name': event.title}}, 'quantity': 1}],
-        mode='payment', success_url=f"{os.getenv('FRONTEND_URL')}success", cancel_url=f"{os.getenv('FRONTEND_URL')}single/{event.id}",
-    )
-    return jsonify({'url': checkout_session.url}), 200
+        return jsonify({"msg": "Evento no encontrado"}), 404
+    return jsonify(event.serialize()), 200
+
+
+@api.route('/create-checkout-session', methods=['POST'])
+@jwt_required()
+def create_checkout_session():
+    try:
+        data = request.get_json()
+        event_id = data.get("event_id")
+        quantity = int(data.get("quantity", 1))
+
+        if not event_id:
+            return jsonify({'error': 'event_id is required'}), 400
+        if quantity < 1:
+            quantity = 1
+
+        event = Event.query.get(event_id)         
+        if not event:
+            return jsonify({'error': 'Event not found'}), 404
+
+        checkout_session = stripe.checkout.Session.create(
+            line_items=[{
+                'price_data': {
+                    'currency': 'eur',
+                    'unit_amount': int(round(event.price * 100)),  
+                    'product_data': {'name': event.title},
+                },
+                'quantity': quantity,               
+            }],
+            mode='payment',
+            metadata={                              
+                'event_id': str(event.id),
+                'quantity': str(quantity),
+                'user_id': str(get_jwt_identity()),
+            },
+            success_url=os.getenv('FRONTEND_URL') + '/success?session_id={CHECKOUT_SESSION_ID}',
+            cancel_url=os.getenv('FRONTEND_URL') + '/single/' + str(event.id),
+        )
+        return jsonify({'url': checkout_session.url}), 200
+
+    except Exception as e:
+        print(f"ERROR DE STRIPE: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
 
 @api.route("/follow/event/<int:event_id>", methods=["POST"])
@@ -119,7 +162,7 @@ def follow_event(event_id):
         return jsonify({"msg": "Ya sigues este evento"}), 400
     db.session.add(UserEventFollow(user_id=user_id, event_id=event_id))
     db.session.commit()
-    return jsonify({"msg": "Evento seguido"}), 201
+    return jsonify({"msg": "Event followed"}), 201
 
 
 @api.route("/follow/event/<int:event_id>", methods=["DELETE"])
@@ -129,10 +172,10 @@ def unfollow_event(event_id):
     follow = UserEventFollow.query.filter_by(
         user_id=user_id, event_id=event_id).first()
     if not follow:
-        return jsonify({"msg": "No sigues este evento"}), 404
+        return jsonify({"msg": "You are not following this event"}), 404
     db.session.delete(follow)
     db.session.commit()
-    return jsonify({"msg": "Evento dejado de seguir"}), 200
+    return jsonify({"msg": "Event no longer followed"}), 200
 
 
 @api.route("/users/followed-events", methods=["GET"])
