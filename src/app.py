@@ -3,6 +3,7 @@ This module takes care of starting the API Server, Loading the DB and Adding the
 """
 import os
 from flask import Flask, request, jsonify, send_from_directory
+from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager
 from api.utils import APIException, generate_sitemap
@@ -18,11 +19,20 @@ static_file_dir = os.path.join(os.path.dirname(
 app = Flask(__name__)
 app.url_map.strict_slashes = False
 
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 app.config["JWT_SECRET_KEY"] = os.getenv(
     "JWT_SECRET_KEY", "super-secret-key-change-me")
 jwt = JWTManager(app)
 
+@app.before_request
+def handle_options_requests():
+    if request.method == 'OPTIONS':
+        response = jsonify({})
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
 
 db_url = os.getenv("DATABASE_URL")
 if db_url is not None:

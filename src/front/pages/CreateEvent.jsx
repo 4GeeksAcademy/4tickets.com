@@ -14,6 +14,7 @@ export const CreateEvent = () => {
   const [tickets, setTickets] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [category, setCategory] = useState("");
+
   
   const navigate = useNavigate();
   
