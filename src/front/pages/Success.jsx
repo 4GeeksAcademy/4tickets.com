@@ -17,7 +17,7 @@ export const Success = () => {
                 return;
             }
             try {
-                const response = await fetch(`${BASE_BACK_URL}api/confirm-purchase`, {
+                const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/confirm-purchase`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",

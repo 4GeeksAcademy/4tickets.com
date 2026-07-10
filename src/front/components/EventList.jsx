@@ -9,7 +9,7 @@ export const EventList = () => {
     const fetchEvents = async () => {
       try {
         
-        const response = await fetch(import.meta.env.VITE_BACKEND_URL + "/api/events");
+        const response = await fetch(import.meta.env.VITE_BACKEND_URL + "/api/event");
 
         if (!response.ok) {
           throw new Error("Error al obtener los eventos del servidor");
