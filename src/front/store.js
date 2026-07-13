@@ -1,38 +1,70 @@
-export const initialStore=()=>{
-  return{
+export const initialStore = () => {
+  return {
     message: null,
-    todos: [
-      {
-        id: 1,
-        title: "Make the bed",
-        background: null,
-      },
-      {
-        id: 2,
-        title: "Do my homework",
-        background: null,
-      }
-    ]
-  }
-}
+
+    events: [],
+    followedEvents: [],
+    user: null,
+    company: null,
+    accountType: null
+   
+  };
+};
 
 export default function storeReducer(store, action = {}) {
-  switch(action.type){
-    case 'set_hello':
+  switch (action.type) {
+    case "set_hello":
       return {
         ...store,
-        message: action.payload
+        message: action.payload,
       };
-      
-    case 'add_task':
 
-      const { id,  color } = action.payload
+    case "set_events":
+      return {
+        ...store,
+        events: action.payload,
+      };
+
+    case "toggle_follow_event":
+      const eventId = action.payload;
+      const isFollowing = store.followedEvents.includes(eventId);
+
+      console.log(
+        `Simulando: ${isFollowing ? "Dejando de seguir" : "Siguiendo"} evento ID: ${eventId}`,
+      );
 
       return {
         ...store,
-        todos: store.todos.map((todo) => (todo.id === id ? { ...todo, background: color } : todo))
+        followedEvents: isFollowing
+          ? store.followedEvents.filter((id) => id !== eventId)
+          : [...store.followedEvents, eventId],
       };
-    default:
-      throw Error('Unknown action.');
-  }    
+
+        case "login_company":
+            return {
+                ...store,
+                company: action.payload,
+                user: null,
+                accountType: "company"
+            };
+
+        case "login_user":
+            return {
+                ...store,
+                user: action.payload,
+                company: null,
+                accountType: "user"
+            };
+
+        case "logout":
+            return {
+                ...store,
+                user: null,
+                company: null,
+                accountType: null
+            };
+
+        default:
+            return store;
+    }
 }

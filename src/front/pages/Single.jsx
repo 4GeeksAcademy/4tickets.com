@@ -1,37 +1,109 @@
-// Import necessary hooks and components from react-router-dom and other libraries.
-import { Link, useParams } from "react-router-dom";  // To use link for navigation and useParams to get URL parameters
-import PropTypes from "prop-types";  // To define prop types for this component
-import rigoImageUrl from "../assets/img/rigo-baby.jpg"  // Import an image asset
-import useGlobalReducer from "../hooks/useGlobalReducer";  // Import a custom hook for accessing the global state
+import React, { useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import useGlobalReducer from "../hooks/useGlobalReducer";
+import { FollowButton } from "../components/FollowButton.jsx";
+import { BASE_BACK_URL } from "../core/constantsUrl.js";
 
-// Define and export the Single component which displays individual item details.
-export const Single = props => {
-  // Access the global state using the custom hook.
-  const { store } = useGlobalReducer()
+export const Single = () => {
+    const { store } = useGlobalReducer();
+    const { theId } = useParams();
 
-  // Retrieve the 'theId' URL parameter using useParams hook.
-  const { theId } = useParams()
-  const singleTodo = store.todos.find(todo => todo.id === parseInt(theId));
+    const [quantity, setQuantity] = useState(1);
 
-  return (
-    <div className="container text-center">
-      {/* Display the title of the todo element dynamically retrieved from the store using theId. */}
-      <h1 className="display-4">Todo: {singleTodo?.title}</h1>
-      <hr className="my-4" />  {/* A horizontal rule for visual separation. */}
+    const event = store.events.find((item) => item.id === parseInt(theId));
 
-      {/* A Link component acts as an anchor tag but is used for client-side routing to prevent page reloads. */}
-      <Link to="/">
-        <span className="btn btn-primary btn-lg" href="#" role="button">
-          Back home
-        </span>
-      </Link>
-    </div>
-  );
+    const handlePayment = async () => {
+    const token = localStorage.getItem("token"); 
+
+    if (!token) {
+        alert("You must log in to purchase tickets");
+        return;
+    }
+
+    localStorage.setItem("last_event_id", event.id);
+    try {
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/create-checkout-session`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token 
+            },
+            body: JSON.stringify({
+                event_id: event.id,
+                quantity: quantity
+            }),
+        });
+
+        const data = await response.json();
+        
+        if (response.ok && data.url) {
+            window.location.href = data.url;
+        } else {
+            alert(data.msg || "Error starting payment");
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        alert("Unable to connect to the payment server");
+    }
 };
 
-// Use PropTypes to validate the props passed to this component, ensuring reliable behavior.
-Single.propTypes = {
-  // Although 'match' prop is defined here, it is not used in the component.
-  // Consider removing or using it as needed.
-  match: PropTypes.object
+    if (!event) {
+        return (
+            <div className="container text-center mt-5">
+                <p>Event not found.</p>
+                <Link to="/">
+                    <span className="btn btn-primary">Return</span>
+                </Link>
+            </div>
+        );
+    }
+
+    return (
+        <div className="container my-5">
+            <div className="card">
+                {event.image_url && (
+                    <img src={event.image_url} className="single-event-img card-img-top" alt={event.title} />
+                )}
+                <div className="card-body">
+                    <h1>{event.title}</h1>
+                    <p>{event.description}</p>
+                    <p><strong>Date:</strong> {event.date}</p>
+                    <p><strong>Place:</strong> {event.location}</p>
+                    <p><strong>Price:</strong> {event.price} EUR</p>
+                    <p><strong>Available places:</strong> {event.capacity}</p>
+
+                <div className="mb-3">
+                    <label className="form-label">Number of entries:</label>
+                    <input 
+                        type="number" 
+                        className="form-control w-25" 
+                        value={quantity} 
+                        min="1" 
+                        max={event.capacity}
+                        onChange={(e) => setQuantity(parseInt(e.target.value))} 
+                    />
+                </div>
+
+                    <div className="d-flex gap-2 align-items-center">
+                        <Link to="/" className="btn btn-secondary">
+                            Back to events
+                        </Link>
+                        
+                        {event.capacity > 0 ? (
+                            <button onClick={handlePayment} className="btn btn-success">
+                                Buy ticket
+                            </button>
+                        ) : (
+                            <button className="btn btn-danger" disabled>
+                                Unavailable
+                            </button>
+                        )}
+
+                        {/* Aquí entra tu botón de seguir, integrado con los demás */}
+                        <FollowButton eventId={event.id} />
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
 };
