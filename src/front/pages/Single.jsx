@@ -22,7 +22,7 @@ export const Single = () => {
 
     localStorage.setItem("last_event_id", event.id);
     try {
-        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/create-checkout-session`, {
+        const response = await fetch(`${BASE_BACK_URL}api/create-checkout-session`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -89,18 +89,22 @@ export const Single = () => {
                             Back to events
                         </Link>
                         
-                        {event.capacity > 0 ? (
-                            <button onClick={handlePayment} className="btn btn-success">
-                                Buy ticket
-                            </button>
-                        ) : (
-                            <button className="btn btn-danger" disabled>
-                                Unavailable
-                            </button>
-                        )}
+                    {store.accountType === "user" && (
+                    <>
+                    {event.capacity > 0 ? (
+                        <button onClick={handlePayment} className="btn btn-success">
+                            Buy ticket
+                        </button>
+                    ) : (
+                        <button className="btn btn-danger" disabled>
+                            Unavailable
+                        </button>
+                     )}
 
                         {/* Aquí entra tu botón de seguir, integrado con los demás */}
                         <FollowButton eventId={event.id} />
+                    </>
+                     )}
                     </div>
                 </div>
             </div>
