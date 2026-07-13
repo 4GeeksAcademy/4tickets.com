@@ -9,6 +9,7 @@ import { CompanyDashboard } from "./pages/CompanyDashboard";
 import { Contact } from "./pages/Contact";
 import { UserDashboard } from "./pages/UserDashboard";
 import { Success } from "./pages/Success";
+import { EditEvent } from "./pages/EditEvent";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -22,8 +23,8 @@ export const router = createBrowserRouter(
       <Route path="/contact" element={<Contact />} />
       <Route path="/success" element={<Success />} />
       <Route path="/user-dashboard" element={<UserDashboard />} />
-      <Route path="success" element={<Success />} />
-
+      <Route path="/edit-event/:theId" element={<EditEvent />} />
+      
     </Route>
   )
 );
