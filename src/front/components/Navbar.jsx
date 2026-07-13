@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FaBuilding, FaPowerOff, FaUser } from "react-icons/fa";
 import { toast } from "react-toastify";
-
 import { BASE_BACK_URL } from "../core/constantsUrl";
 
 export const Navbar = () => {

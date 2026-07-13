@@ -100,7 +100,7 @@ class Buy(db.Model):
     user_id: Mapped[int] = mapped_column(ForeignKey('user.id'), nullable=False)
     event_id: Mapped[int] = mapped_column(ForeignKey('event.id'), nullable=False)
     ticket_code: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
-    stripe_session_id: Mapped[str] = mapped_column(String(255), nullable=True)   # 👈 NUEVO
+    stripe_session_id: Mapped[str] = mapped_column(String(255), nullable=True)  
 
     purchase_date: Mapped[datetime] = mapped_column(
         DateTime, default=lambda: datetime.now(timezone.utc)
