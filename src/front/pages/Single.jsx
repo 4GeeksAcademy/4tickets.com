@@ -67,11 +67,12 @@ export const Single = () => {
                 <div className="card-body">
                     <h1>{event.title}</h1>
                     <p>{event.description}</p>
-                    <p><strong>Date:</strong> {event.date}</p>
-                    <p><strong>Place:</strong> {event.location}</p>
-                    <p><strong>Price:</strong> {event.price} EUR</p>
-                    <p><strong>Available places:</strong> {event.capacity}</p>
-
+                    <div className="single-event-details">
+                         <p><strong>📍 Location:</strong> {event.location}</p>
+                         <p><strong>📅 Date:</strong> {new Date(event.date).toLocaleDateString("en-GB")}</p>
+                         <p><strong>🎟 Available tickets:</strong> {event.capacity}</p>
+                    </div>
+                <h2 className="single-price">{event.price} €</h2>
                 <div className="mb-3">
                     <label className="form-label">Number of entries:</label>
                     <input 
