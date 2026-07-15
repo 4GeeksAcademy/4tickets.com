@@ -3,7 +3,7 @@ import Atropos from "atropos/react";
 import "atropos/css";
 
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Pagination } from "swiper/modules";
+import { Navigation, Pagination, Autoplay} from "swiper/modules";
 import { useNavigate } from "react-router-dom";
 
 import "swiper/css";
@@ -20,69 +20,152 @@ export const AtroposCard = () => {
     const navigate = useNavigate();
 
     return (
-        <div className="container my-5">
-            <h2 className="text-center mb-4">Featured Events</h2>
+    <div className="container my-5">
+        <h2 className="text-center mb-4">Featured Events</h2>
 
-            <Swiper
-                modules={[Navigation, Pagination]}
-                spaceBetween={20}
-                slidesPerView={1}
-                navigation={true}
-                pagination={{ clickable: true }}
-                grabCursor={true}
-                style={{ paddingBottom: "50px" }}
-            >
-                {/* TARJETA 1 */}
-                <SwiperSlide>
-                    <Atropos>
-                        <div className="card">
-                            <img src={festivalImage} className="card-img-top" alt="Concert" style={{ height: "250px", objectFit: "cover" }} />
-                            <div className="card-body text-center">
-                                <h5 className="card-title">Summer Concert</h5>
-                                <p className="card-text">Madrid - June 25, 2026</p>
+        <Swiper
+            modules={[Navigation, Pagination, Autoplay]}
+            spaceBetween={30}
+            slidesPerView={1}
+            navigation
+            pagination={{ clickable: true }}
+            grabCursor
+            loop
+            autoplay={{
+                delay: 3500,
+                disableOnInteraction: false
+            }}
+            style={{ paddingBottom: "50px" }}
+        >
+            {/* TARJETA 1 */}
+            <SwiperSlide>
+                <Atropos
+                    className="featured-atropos"
+                    shadow={false}
+                    highlight={false}
+                >
+                    <div className="featured-card">
+                        <img
+                            src={festivalImage}
+                            alt="Summer Concert"
+                            className="featured-card-img"
+                            data-atropos-offset="-3"
+                        />
+
+                        <div className="featured-card-overlay">
+                            <span
+                                className="featured-card-category"
+                                data-atropos-offset="3"
+                            >
+                                Concert
+                            </span>
+
+                            <div data-atropos-offset="5">
+                                <h3>Summer Concert</h3>
+                                <p>Madrid · June 25, 2026</p>
+
+                                <div className="d-flex gap-2 justify-content-center">
+                                    <button
+                                        className="btn btn-warning"
+                                        onClick={() => navigate("/single/1")}
+                                    >
+                                        Buy Ticket
+                                    </button>
+
+                                    <FollowButton eventId={1} />
+                                </div>
                             </div>
                         </div>
-                    </Atropos>
-                    <div className="d-flex justify-content-center gap-2 mt-2">
-                        <button className="btn btn-primary" onClick={() => navigate(`/single/1`)}>Buy Ticket</button>
-                        <FollowButton eventId={1} />
                     </div>
-                </SwiperSlide>
+                </Atropos>
+            </SwiperSlide>
 
-                {/* TARJETA 2 */}
-                <SwiperSlide>
-                    <Atropos>
-                        <div className="card">
-                            <img src={concertImage} className="card-img-top" alt="Festival" style={{ height: "250px", objectFit: "cover" }} />
-                            <div className="card-body text-center">
-                                <h5 className="card-title">Music Festival</h5>
-                                <p className="card-text">Barcelona - July 10, 2026</p>
+            {/* TARJETA 2 */}
+            <SwiperSlide>
+                <Atropos
+                    className="featured-atropos"
+                    shadow={false}
+                    highlight={false}
+                >
+                    <div className="featured-card">
+                        <img
+                            src={concertImage}
+                            alt="Music Festival"
+                            className="featured-card-img"
+                            data-atropos-offset="-3"
+                        />
+
+                        <div className="featured-card-overlay">
+                            <span
+                                className="featured-card-category"
+                                data-atropos-offset="3"
+                            >
+                                Festival
+                            </span>
+
+                            <div data-atropos-offset="5">
+                                <h3>Music Festival</h3>
+                                <p>Barcelona · July 10, 2026</p>
+
+                                <div className="d-flex gap-2 justify-content-center">
+                                    <button
+                                        className="btn btn-warning"
+                                        onClick={() => navigate("/single/2")}
+                                    >
+                                        Buy Ticket
+                                    </button>
+
+                                    <FollowButton eventId={2} />
+                                </div>
                             </div>
                         </div>
-                    </Atropos>
-                    <div className="d-flex justify-content-center gap-2 mt-2">
-                        <button className="btn btn-primary" onClick={() => navigate(`/single/2`)}>Buy Ticket</button>
-                        <FollowButton eventId={2} />
                     </div>
-                </SwiperSlide>
+                </Atropos>
+            </SwiperSlide>
 
-                {/* TARJETA 3 */}
-                <SwiperSlide>
-                    <Atropos>
-                        <div className="card">
-                            <img src={theaterImage} className="card-img-top" alt="Theater" style={{ height: "250px", objectFit: "cover" }} />
-                            <div className="card-body text-center">
-                                <h5 className="card-title">Theater Night</h5>
-                                <p className="card-text">Valencia - August 5, 2026</p>
+            {/* TARJETA 3 */}
+            <SwiperSlide>
+                <Atropos
+                    className="featured-atropos"
+                    shadow={false}
+                    highlight={false}
+                >
+                    <div className="featured-card">
+                        <img
+                            src={theaterImage}
+                            alt="Theater Night"
+                            className="featured-card-img"
+                            data-atropos-offset="-3"
+                        />
+
+                        <div className="featured-card-overlay">
+                            <span
+                                className="featured-card-category"
+                                data-atropos-offset="3"
+                            >
+                                Theater
+                            </span>
+
+                            <div data-atropos-offset="5">
+                                <h3>Theater Night</h3>
+                                <p>Valencia · August 5, 2026</p>
+
+                                <div className="d-flex gap-2 justify-content-center">
+                                    <button
+                                        className="btn btn-warning"
+                                        onClick={() => navigate("/single/3")}
+                                    >
+                                        Buy Ticket
+                                    </button>
+
+                                    <FollowButton eventId={3} />
+                                </div>
                             </div>
                         </div>
-                    </Atropos>
-                    <div className="d-flex justify-content-center gap-2 mt-2">
-                        <button className="btn btn-primary" onClick={() => navigate(`/single/3`)}>Buy Ticket</button>
-                        <FollowButton eventId={3} />
                     </div>
-                </SwiperSlide>
-            </Swiper>
-        </div>
-    );
+                </Atropos>
+            </SwiperSlide>
+        </Swiper>
+    </div>
+);
 };
