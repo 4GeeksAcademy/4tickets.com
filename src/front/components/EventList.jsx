@@ -1,6 +1,8 @@
 import React, { useEffect } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import { EventCard } from "./EventCard.jsx";
+import { BASE_BACK_URL } from "../core/constantsUrl";
+
 
 export const EventList = () => {
   const { store, dispatch } = useGlobalReducer();
@@ -8,17 +10,22 @@ export const EventList = () => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        
-        const response = await fetch(import.meta.env.VITE_BACKEND_URL + "/api/event");
+        const url = `${BASE_BACK_URL}api/event`;
 
+        const response = await fetch(url);
+
+      
         if (!response.ok) {
           throw new Error("Error al obtener los eventos del servidor");
         }
 
         const data = await response.json();
 
-        
-        dispatch({ type: "set_events", payload: data });
+
+        dispatch({
+          type: "set_events",
+          payload: data
+        });
       } catch (error) {
         console.error("Error cargando los eventos:", error);
       }
@@ -26,6 +33,7 @@ export const EventList = () => {
 
     fetchEvents();
   }, [dispatch]);
+
 
   return (
     <div className="container my-5">

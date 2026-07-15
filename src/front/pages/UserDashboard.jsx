@@ -12,7 +12,7 @@ export const UserDashboard = () => {
   const authHeaders = { "Content-Type": "application/json", "Authorization": `Bearer ${token}` };
 
   useEffect(() => {
-    fetch(`${BASE_BACK_URL}/api/user/profile`, { headers: authHeaders })
+    fetch(`${BASE_BACK_URL}api/user/profile`, { headers: authHeaders })
       .then(res => res.json())
       .then(data => {
         setUser(data);
@@ -20,14 +20,14 @@ export const UserDashboard = () => {
       })
       .catch(err => console.error("Error perfil:", err));
 
-    fetch(`${BASE_BACK_URL}/api/user/tickets`, { headers: authHeaders })
+    fetch(`${BASE_BACK_URL}api/user/tickets`, { headers: authHeaders })
       .then(res => res.json())
       .then(data => setTickets(Array.isArray(data) ? data : []))
       .catch(err => console.error("Error tickets:", err));
   }, []);
 
   const handleSave = async () => {
-    const res = await fetch(`${BASE_BACK_URL}/api/user/profile`, {
+    const res = await fetch(`${BASE_BACK_URL}api/user/profile`, {
       method: "PUT", headers: authHeaders, body: JSON.stringify(form)
     });
     const data = await res.json();

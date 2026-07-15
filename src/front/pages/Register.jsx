@@ -9,23 +9,23 @@ export const Register = () => {
      return (
         <div className="container mt-5">
             <div className="text-center mb-4">
-                <h1 className="mb-4">Registro en 4tickets</h1>
+                <h1 className="mb-4 text-muted">Choose the account type that best suits your needs.</h1>
                 
                 {/* Botones para alternar la vista */}
                 <div className="btn-group" role="group">
                     <button 
                         type="button" 
-                        className={`btn ${isUserView ? 'btn btn-success' : 'btn-outline-primary'}`}
+                        className={`btn ${isUserView ? 'btn-primary' : 'btn-outline-primary'}`}
                         onClick={() => setIsUserView(true)}
                     >
-                        Soy Usuario
+                        👤 USER
                     </button>
                     <button 
                         type="button" 
                         className={`btn ${!isUserView ? 'btn-primary' : 'btn-outline-primary'}`}
                         onClick={() => setIsUserView(false)}
                     >
-                        Soy Empresa
+                       🏢 BUSINESS
                     </button>
                 </div>
             </div>

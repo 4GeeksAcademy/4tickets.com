@@ -22,7 +22,7 @@ export const Single = () => {
 
     localStorage.setItem("last_event_id", event.id);
     try {
-        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/create-checkout-session`, {
+        const response = await fetch(`${BASE_BACK_URL}api/create-checkout-session`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -67,11 +67,12 @@ export const Single = () => {
                 <div className="card-body">
                     <h1>{event.title}</h1>
                     <p>{event.description}</p>
-                    <p><strong>Date:</strong> {event.date}</p>
-                    <p><strong>Place:</strong> {event.location}</p>
-                    <p><strong>Price:</strong> {event.price} EUR</p>
-                    <p><strong>Available places:</strong> {event.capacity}</p>
-
+                    <div className="single-event-details">
+                         <p><strong>📍 Location:</strong> {event.location}</p>
+                         <p><strong>📅 Date:</strong> {new Date(event.date).toLocaleDateString("en-GB")}</p>
+                         <p><strong>🎟 Available tickets:</strong> {event.capacity}</p>
+                    </div>
+                <h2 className="single-price">{event.price} €</h2>
                 <div className="mb-3">
                     <label className="form-label">Number of entries:</label>
                     <input 
@@ -89,18 +90,22 @@ export const Single = () => {
                             Back to events
                         </Link>
                         
-                        {event.capacity > 0 ? (
-                            <button onClick={handlePayment} className="btn btn-success">
-                                Buy ticket
-                            </button>
-                        ) : (
-                            <button className="btn btn-danger" disabled>
-                                Unavailable
-                            </button>
-                        )}
+                    {store.accountType === "user" && (
+                    <>
+                    {event.capacity > 0 ? (
+                        <button onClick={handlePayment} className="btn btn-success">
+                            Buy ticket
+                        </button>
+                    ) : (
+                        <button className="btn btn-danger" disabled>
+                            Unavailable
+                        </button>
+                     )}
 
                         {/* Aquí entra tu botón de seguir, integrado con los demás */}
                         <FollowButton eventId={event.id} />
+                    </>
+                     )}
                     </div>
                 </div>
             </div>

@@ -3,7 +3,7 @@ from api.models import db, User, Company, Event, Buy, UserEventFollow, ContactMe
 from flask_cors import CORS
 from datetime import datetime
 from flask_bcrypt import Bcrypt
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, get_jwt
 import stripe
 import os
 import uuid
@@ -41,21 +41,41 @@ def register_user():
 @api.route('/login', methods=['POST'])
 def handle_login():
     body = request.get_json()
+
     if not body or "email" not in body or "password" not in body:
         return jsonify({"msg": "Faltan credenciales"}), 400
 
     user = User.query.filter_by(email=body.get("email")).first()
-    if user and bcrypt.check_password_hash(user.password, body.get("password")):
-        token = create_access_token(identity=str(user.id))
-        return jsonify({"access_token": token, 
-                        "accountType": "user",
-                        "user": user.serialize()}), 200
-    
+
+    if user and bcrypt.check_password_hash(
+        user.password,
+        body.get("password")
+    ):
+        token = create_access_token(
+            identity=str(user.id),
+            additional_claims={
+                "accountType": "user"
+            }
+        )
+
+        return jsonify({
+            "access_token": token,
+            "accountType": "user",
+            "user": user.serialize()
+        }), 200
 
     company = Company.query.filter_by(email=body.get("email")).first()
 
-    if company and bcrypt.check_password_hash(company.password, body.get("password")):
-        token = create_access_token(identity=str(company.id))
+    if company and bcrypt.check_password_hash(
+        company.password,
+        body.get("password")
+    ):
+        token = create_access_token(
+            identity=str(company.id),
+            additional_claims={
+                "accountType": "company"
+            }
+        )
 
         return jsonify({
             "access_token": token,
@@ -63,7 +83,9 @@ def handle_login():
             "company": company.serialize()
         }), 200
 
-    return jsonify({"msg": "Invalid email or password"}), 401
+    return jsonify({
+        "msg": "Invalid email or password"
+    }), 401
 
 
 @api.route('/registro-empresa', methods=['POST'])
@@ -83,19 +105,38 @@ def registrar_empresa():
 
 
 @api.route('/event', methods=['POST'])
+@jwt_required()
 def create_event():
     body = request.get_json()
+    company_id = int(get_jwt_identity())
+
     try:
         event_date = datetime.fromisoformat(
-            body['date'].replace("Z", "+00:00"))
-        new_event = Event(title=body['title'], description=body['description'], date=event_date,
-                          location=body['location'], price=body['price'], capacity=body['capacity'],
-                          category=body['category'], image_url=body['image_url'],
-                          company_id=body['company_id'])
+            body['date'].replace("Z", "+00:00")
+        )
+
+        new_event = Event(
+            title=body['title'],
+            description=body['description'],
+            date=event_date,
+            location=body['location'],
+            price=body['price'],
+            capacity=body['capacity'],
+            category=body['category'],
+            image_url=body['image_url'],
+            company_id=company_id
+        )
+
         db.session.add(new_event)
         db.session.commit()
-        return jsonify({"msg": "Event created", "event": new_event.serialize()}), 201
+
+        return jsonify({
+            "msg": "Event created",
+            "event": new_event.serialize()
+        }), 201
+
     except Exception as e:
+        db.session.rollback()
         return jsonify({"msg": str(e)}), 400
 
 
@@ -111,10 +152,115 @@ def get_single_event(event_id):
         return jsonify({"msg": "Evento no encontrado"}), 404
     return jsonify(event.serialize()), 200
 
+@api.route('/event/<int:event_id>', methods=['PUT'])
+@jwt_required()
+def update_event(event_id):
+    claims = get_jwt()
+
+    if claims.get("accountType") != "company":
+        return jsonify({
+            "msg": "Only companies can edit events"
+        }), 403
+
+    company_id = int(get_jwt_identity())
+
+    event = Event.query.get(event_id)
+
+    if not event:
+        return jsonify({
+            "msg": "Event not found"
+        }), 404
+
+    if event.company_id != company_id:
+        return jsonify({
+            "msg": "You cannot edit another company's event"
+        }), 403
+
+    body = request.get_json()
+
+    try:
+        if "title" in body:
+            event.title = body["title"]
+
+        if "description" in body:
+            event.description = body["description"]
+
+        if "date" in body:
+            event.date = datetime.fromisoformat(
+                body["date"].replace("Z", "+00:00")
+            )
+
+        if "location" in body:
+            event.location = body["location"]
+
+        if "price" in body:
+            event.price = body["price"]
+
+        if "capacity" in body:
+            event.capacity = body["capacity"]
+
+        if "category" in body:
+            event.category = body["category"]
+
+        if "image_url" in body:
+            event.image_url = body["image_url"]
+
+        db.session.commit()
+
+        return jsonify({
+            "msg": "Event updated",
+            "event": event.serialize()
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+
+        return jsonify({
+            "msg": str(e)
+        }), 400
+    
+@api.route('/event/<int:event_id>', methods=['DELETE'])
+@jwt_required()
+def delete_event(event_id):
+    claims = get_jwt()
+
+    if claims.get("accountType") != "company":
+        return jsonify({
+            "msg": "Only companies can delete events"
+        }), 403
+
+    company_id = int(get_jwt_identity())
+
+    event = Event.query.get(event_id)
+
+    if not event:
+        return jsonify({
+            "msg": "Event not found"
+        }), 404
+
+    if event.company_id != company_id:
+        return jsonify({
+            "msg": "You cannot delete another company's event"
+        }), 403
+
+    db.session.delete(event)
+    db.session.commit()
+
+    return jsonify({
+        "msg": "Event deleted successfully"
+    }), 200    
 
 @api.route('/create-checkout-session', methods=['POST'])
 @jwt_required()
 def create_checkout_session():
+    claims = get_jwt()
+
+    if claims.get("accountType") != "user":
+        return jsonify({
+            "msg": "Only users can purchase tickets"
+        }), 403
+
+    
     try:
         data = request.get_json()
         event_id = data.get("event_id")
@@ -144,8 +290,8 @@ def create_checkout_session():
                 'quantity': str(quantity),
                 'user_id': str(get_jwt_identity()),
             },
-            success_url=os.getenv('FRONTEND_URL') + '/success?session_id={CHECKOUT_SESSION_ID}',
-            cancel_url=os.getenv('FRONTEND_URL') + '/single/' + str(event.id),
+            success_url=os.getenv('FRONTEND_URL') + 'success?session_id={CHECKOUT_SESSION_ID}',
+            cancel_url=os.getenv('FRONTEND_URL') + 'single/' + str(event.id),
         )
         return jsonify({'url': checkout_session.url}), 200
 
@@ -345,3 +491,43 @@ def get_user_tickets():
         })
 
     return jsonify(tickets_list), 200
+
+@api.route('/profile', methods=['GET'])
+@jwt_required()
+def get_profile():
+    account_id = int(get_jwt_identity())
+    claims = get_jwt()
+    account_type = claims.get("accountType")
+
+    if account_type == "user":
+        user = User.query.get(account_id)
+
+        if not user:
+            return jsonify({"msg": "User not found"}), 404
+
+        return jsonify({
+            "accountType": "user",
+            "user": user.serialize()
+        }), 200
+
+    if account_type == "company":
+        company = Company.query.get(account_id)
+
+        if not company:
+            return jsonify({"msg": "Company not found"}), 404
+
+        return jsonify({
+            "accountType": "company",
+            "company": company.serialize()
+        }), 200
+
+    return jsonify({"msg": "Invalid account type"}), 400
+
+@api.route('/company/events', methods=['GET'])
+@jwt_required()
+def get_company_events():
+    company_id = int(get_jwt_identity())
+
+    events = Event.query.filter_by(company_id=company_id).all()
+
+    return jsonify([event.serialize() for event in events]), 200

@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Link, useSearchParams } from 'react-router-dom';
-import QRCode from 'react-qr-code';
+import { Link, useSearchParams } from "react-router-dom";
+import QRCode from "react-qr-code";
+import { BASE_BACK_URL } from "../core/constantsUrl";
+import { toast } from "react-toastify";
 
 export const Success = () => {
     const [searchParams] = useSearchParams();
     const sessionId = searchParams.get("session_id");
+
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -16,57 +19,103 @@ export const Success = () => {
                 setLoading(false);
                 return;
             }
+
             try {
-                const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/confirm-purchase`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${localStorage.getItem("token")}`
-                    },
-                    body: JSON.stringify({ session_id: sessionId }),
-                });
-                const result = await response.json();
-                if (response.ok) setData(result);
-                else setError(result.message || "Failed to confirm purchase.");
-            } catch (err) {
+                const response = await fetch(
+                    `${BASE_BACK_URL}api/confirm-purchase`,
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${localStorage.getItem("token")}`
+                        },
+                        body: JSON.stringify({
+                            session_id: sessionId
+                        })
+                    }
+                );
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    setData(data);
+
+                    console.log("¡Compra guardada en la base de datos!");
+                    toast.success("Payment successful!");
+
+                    localStorage.removeItem("last_event_id");
+                } else {
+                    const errorMessage =
+                        data.msg ||
+                        data.message ||
+                        "Failed to confirm purchase.";
+
+                    setError(errorMessage);
+                    toast.error(errorMessage);
+                }
+            } catch (error) {
+                console.error("Error al confirmar la compra:", error);
+
                 setError("Network error. Please try again later.");
+                toast.error("Network error. Please try again later.");
             } finally {
                 setLoading(false);
             }
         };
+
         confirmPurchase();
     }, [sessionId]);
 
+    if (loading) {
+        return (
+            <div className="container text-center my-5">
+                <h2>Confirming your purchase...</h2>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="container text-center my-5">
+                <h2>Purchase confirmation error</h2>
+                <p className="text-danger">{error}</p>
+
+                <Link to="/" className="btn btn-primary">
+                    Back to Home
+                </Link>
+            </div>
+        );
+    }
+
     return (
-        <div className="container mt-5 text-center">
-            {loading ? (
-                <h1>Processing your payment...</h1>
-            ) : error ? (
-                <div className="alert alert-danger">
-                    <h1>Payment Error</h1>
-                    <p>{error}</p>
-                    <Link to="/" className="btn btn-primary">Return to main page</Link>
-                </div>
-            ) : (
-                <div>
-                    <h1>Payment successful! 🎉</h1>
-                    <p>Thank you for your purchase of <strong>{data.event?.title}</strong>.</p>
-                    <div className="row justify-content-center my-4">
-                        {data.tickets.map((ticket, index) => (
-                            <div key={ticket.id} className="col-md-4 mb-4">
-                                <div className="card p-3 shadow-sm">
-                                    <h5>Ticket #{index + 1}</h5>
-                                    <div style={{ background: 'white', padding: '16px', display: 'inline-block', margin: '0 auto' }}>
-                                        <QRCode value={ticket.ticket_code} size={160} />
-                                    </div>
-                                    <p className="mt-3"><strong>Code:</strong> {ticket.ticket_code}</p>
-                                </div>
-                            </div>
-                        ))}
+        <div className="container text-center my-5">
+            <h1>Payment successful!</h1>
+
+            <p>Your purchase has been confirmed.</p>
+
+            {data?.ticket_code && (
+                <div className="my-4">
+                    <h4>Your ticket QR code</h4>
+
+                    <div
+                        style={{
+                            background: "white",
+                            padding: "16px",
+                            display: "inline-block"
+                        }}
+                    >
+                        <QRCode value={data.ticket_code} />
                     </div>
-                    <Link to="/" className="btn btn-primary">Return to main page</Link>
+
+                    <p className="mt-3">
+                        Ticket code: <strong>{data.ticket_code}</strong>
+                    </p>
                 </div>
             )}
+
+            <Link to="/" className="btn btn-primary">
+                Back to Home
+            </Link>
         </div>
     );
 };
