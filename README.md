@@ -1,81 +1,117 @@
-# WebApp boilerplate with React JS and Flask API
+markdown
+<h1 align="center">🎫 4Tickets.com</h1>
 
-Build web applications using React.js for the front end and python/flask for your backend API.
+<p align="center">
+  <strong>Plataforma de venta de entradas para eventos</strong><br>
+  Las empresas publican sus eventos y venden entradas; los usuarios las compran y reciben su ticket con código QR directamente en la plataforma.
+</p>
 
-- Documentation can be found here: https://4geeks.com/docs/start/react-flask-template
-- Here is a video on [how to use this template](https://www.loom.com/share/f37c6838b3f1496c95111e515e83dd9b)
-- Integrated with Pipenv for package managing.
-- Fast deployment to Render [in just a few steps here](https://4geeks.com/docs/start/deploy-to-render-com).
-- Use of .env file.
-- SQLAlchemy integration for database abstraction.
+<p align="center">
+  <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB"/>
+  <img src="https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white"/>
+  <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Stripe-626CD9?style=for-the-badge&logo=stripe&logoColor=white"/>
+  <img src="https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white"/>
+</p>
 
-### 1) Installation:
+---
 
-> If you use Github Codespaces (recommended) or Gitpod this template will already come with Python, Node and the Posgres Database installed. If you are working locally make sure to install Python 3.10, Node 
+## 📖 Descripción
 
-It is recomended to install the backend first, make sure you have Python 3.10, Pipenv and a database engine (Posgress recomended)
+**4Tickets.com** es una aplicación web full stack que conecta a **empresas organizadoras de eventos** con **usuarios** que quieren comprar entradas.
 
-1. Install the python packages: `$ pipenv install`
-2. Create a .env file based on the .env.example: `$ cp .env.example .env`
-3. Install your database engine and create your database, depending on your database you have to create a DATABASE_URL variable with one of the possible values, make sure you replace the valudes with your database information:
+- Las **empresas** se registran, acceden a un panel de control y publican sus eventos con sus entradas disponibles.
+- Los **usuarios** exploran los eventos, guardan sus favoritos y **compran las entradas con pago real mediante Stripe**.
+- Tras el pago, el sistema genera automáticamente un **código QR alfanumérico** que sirve como entrada, disponible en la propia plataforma.
 
-| Engine    | DATABASE_URL                                        |
-| --------- | --------------------------------------------------- |
-| SQLite    | sqlite:////test.db                                  |
-| MySQL     | mysql://username:password@localhost:port/example    |
-| Postgress | postgres://username:password@localhost:5432/example |
+Proyecto final desarrollado en equipo (4 personas) durante el Bootcamp Full Stack de 4Geeks Academy.
 
-4. Migrate the migrations: `$ pipenv run migrate` (skip if you have not made changes to the models on the `./src/api/models.py`)
-5. Run the migrations: `$ pipenv run upgrade`
-6. Run the application: `$ pipenv run start`
+---
 
-> Note: Codespaces users can connect to psql by typing: `psql -h localhost -U gitpod example`
+## ✨ Funcionalidades
 
-### Undo a migration
+### 👤 Usuarios
+- Registro e inicio de sesión con autenticación **JWT**
+- Exploración de eventos y vista de detalle
+- Sistema de **favoritos / seguir eventos**
+- **Compra de entradas con Stripe** (pago real en modo test)
+- **Ticket con código QR** generado automáticamente tras la compra
+- Cuenta personal con sus entradas y datos
 
-You are also able to undo a migration by running
+### 🏢 Empresas
+- Registro de empresa e inicio de sesión
+- **Dashboard** de gestión
+- Creación y administración de sus **eventos y entradas**
+- Control de **stock** de entradas disponibles
 
-```sh
-$ pipenv run downgrade
-```
+### 🌐 General
+- Página de contacto
+- Notificaciones en tiempo real con **React-Toastify**
+- Interfaz responsive con **Bootstrap**
 
-### Backend Populate Table Users
+---
 
-To insert test users in the database execute the following command:
+## 🛠️ Stack Tecnológico
 
-```sh
-$ flask insert-test-users 5
-```
+| Capa | Tecnologías |
+|------|-------------|
+| **Frontend** | React, JavaScript, React Router, Bootstrap, React-Toastify, Vite |
+| **Backend** | Python, Flask, SQLAlchemy, Flask-JWT-Extended |
+| **Base de datos** | PostgreSQL |
+| **Pagos** | Stripe |
+| **Autenticación** | JWT (JSON Web Tokens) |
+| **Control de versiones** | Git & GitHub (trabajo en equipo con ramas y Pull Requests) |
 
-And you will see the following message:
+---
 
-```
-  Creating test users
-  test_user1@test.com created.
-  test_user2@test.com created.
-  test_user3@test.com created.
-  test_user4@test.com created.
-  test_user5@test.com created.
-  Users created successfully!
-```
+## 👨‍💻 Mi aportación al proyecto
 
-### **Important note for the database and the data inside it**
+Como parte del equipo de 4 desarrolladores, yo (**Alberto Oliveira**) me encargué de:
 
-Every Github codespace environment will have **its own database**, so if you're working with more people eveyone will have a different database and different records inside it. This data **will be lost**, so don't spend too much time manually creating records for testing, instead, you can automate adding records to your database by editing ```commands.py``` file inside ```/src/api``` folder. Edit line 32 function ```insert_test_data``` to insert the data according to your model (use the function ```insert_test_users``` above as an example). Then, all you need to do is run ```pipenv run insert-test-data```.
+- 🏢 **Registro de empresas**: formulario y lógica de alta de empresas.
+- 💳 **Sistema de pagos con Stripe**: integración completa del checkout y confirmación de pago.
+- 👤 **Cuenta de usuario y Dashboard**: vistas y gestión del perfil.
+- 🎟️ **Generación del código QR alfanumérico**: al completarse el pago, se genera el ticket con su QR único.
 
-### Front-End Manual Installation:
+---
 
--   Make sure you are using node version 20 and that you have already successfully installed and runned the backend.
+## 🚀 Instalación y ejecución local
 
-1. Install the packages: `$ npm install`
-2. Start coding! start the webpack dev server `$ npm run start`
+> Requisitos: Python 3.10, Node 20 y PostgreSQL.
 
-## Publish your website!
+### Backend
+bash
+pipenv install
 
-This boilerplate it's 100% read to deploy with Render.com and Heroku in a matter of minutes. Please read the [official documentation about it](https://4geeks.com/docs/start/deploy-to-render-com).
+cp .env.example .env # configura DATABASE_URL, JWT_SECRET_KEY y las claves de Stripe
 
-### Contributors
+pipenv run migrate
 
-This template was built as part of the 4Geeks Academy [Coding Bootcamp](https://4geeksacademy.com/us/coding-bootcamp) by [Alejandro Sanchez](https://twitter.com/alesanchezr) and many other contributors. Find out more about our [Full Stack Developer Course](https://4geeksacademy.com/us/coding-bootcamps/part-time-full-stack-developer), and [Data Science Bootcamp](https://4geeksacademy.com/us/coding-bootcamps/datascience-machine-learning).
+pipenv run upgrade
 
-You can find other templates and resources like this at the [school github page](https://github.com/4geeksacademy/).
+pipenv run start
+
+
+### Frontend
+bash
+npm install
+
+npm run start
+
+
+La app quedará disponible en `http://localhost:3000` (frontend) y `http://localhost:3001` (API).
+
+---
+
+## 👥 Equipo
+
+Proyecto desarrollado en equipo durante el Bootcamp Full Stack de **4Geeks Academy**.
+
+- Alberto Oliveira — [GitHub](https://github.com/albertooliveira-ia)
+- Jose - [GitHub](https://github.com/kwonsl)
+- Alejandro García López - [GitHub](https://github.com/vlx1844)
+- David - [GitHub](https://github.com/DaviidCT)
+
+---
+
+<p align="center">Hecho con ❤️ y mucho ☕ durante el Bootcamp de 4Geeks Academy</p>
